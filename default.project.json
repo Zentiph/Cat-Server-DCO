@@ -1,0 +1,38 @@
+{
+  "name": "Cat Server DCO",
+  "tree": {
+    "$className": "DataModel",
+
+    "ReplicatedStorage": {
+      "Shared": {
+        "$path": "src/shared"
+      }
+    },
+
+    "ServerScriptService": {
+      "Server": {
+        "$path": "src/server"
+      }
+    },
+
+    "StarterPlayer": {
+      "StarterPlayerScripts": {
+        "Client": {
+          "$path": "src/client"
+        }
+      }
+    },
+
+    "Workspace": {
+      "CustomClientObjects": {
+        "$className": "Folder",
+        "SpotlightChangers": {
+          "$path": "src/cco/SpotlightChangers"
+        },
+        "TimeZones": {
+          "$path": "src/cco/TimeZones"
+        }
+      }
+    }
+  }
+}
