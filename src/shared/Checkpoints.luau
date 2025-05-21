@@ -1,53 +1,25 @@
 -- Checkpoints module by zen
 
 local Players = game:GetService("Players")
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
-local checkpoints = {}
+local Checkpoints = {}
 
-local UpdateCameraEvent = ReplicatedStorage:WaitForChild("UpdateCameraEvent")
+Checkpoints.CHECKPOINTS_FOLDER = workspace:WaitForChild("CustomClientObjects"):WaitForChild("Checkpoints")
+Checkpoints.CHECKPOINT_START_VALUE = 0
 
-checkpoints.CHECKPOINTS_FOLDER =
-	workspace:WaitForChild("JToH Kit v5.5"):WaitForChild("Obby"):WaitForChild("Checkpoints")
-checkpoints.CHECKPOINT_START_VALUE = 0
+local function updateCamera(cFrame: CFrame)
+	local camera = workspace.CurrentCamera
 
---[[
-Teleport the player to a checkpoint number.
+	local originalCameraType = camera.CameraType
+	local originalSubject = camera.CameraSubject
 
-@param character - The character of the player to teleport
-@param checkpointNumber - The checkpoint number to teleport to
-]]
-function checkpoints.teleportToCheckpoint(character: Model, checkpointNumber: number)
-	if checkpointNumber < checkpoints.CHECKPOINT_START_VALUE then
-		warn(
-			`Checkpoint number ({checkpointNumber}) is less than the `
-				.. `start value ({checkpoints.CHECKPOINT_START_VALUE}), not teleporting.`
-		)
-		return
-	end
+	camera.CameraType = Enum.CameraType.Scriptable
+	camera.CFrame = cFrame
 
-	local checkpointPart = checkpoints.CHECKPOINTS_FOLDER:FindFirstChild(tostring(checkpointNumber))
-	if not checkpointPart then
-		warn("Checkpoint part not found for stage " .. checkpointNumber)
-		return
-	end
-
-	local checkpointCFrame = checkpointPart.CFrame
-	local offset = CFrame.new(0, 3, 0) -- Place player a few studs above
-	local rotationOffset = CFrame.Angles(0, math.rad(90), 0)
-
-	-- Update player position and orientation to match checkpoint's
-	local finalCFrame = checkpointCFrame * rotationOffset * offset
-
-	-- Make character jump to break out of client objects
-	local humanoid = character:WaitForChild("Humanoid") :: Humanoid
-	humanoid.Jump = true
-
-	task.wait(0.05) -- Wait for jump first...
-
-	local humanoidRootPart = character:WaitForChild("HumanoidRootPart") :: Part
-	humanoidRootPart.CFrame = finalCFrame
-	UpdateCameraEvent:FireClient(Players:GetPlayerFromCharacter(character), finalCFrame)
+	task.delay(0.05, function()
+		camera.CameraSubject = originalSubject
+		camera.CameraType = originalCameraType
+	end)
 end
 
 --[[
@@ -56,7 +28,7 @@ Get the difficulty name of the stage number.
 @param stageNumber - The stage number to get the difficulty of
 @return The name of the difficulty of the given stage
 ]]
-function checkpoints.getDifficultyFromStage(stageNumber: number): string
+function Checkpoints.getDifficultyFromStage(stageNumber: number): string
 	-- NOTE: Update these values based on when stages end
 	if stageNumber == 0 then
 		return "Lobby"
@@ -109,6 +81,68 @@ function checkpoints.getDifficultyFromStage(stageNumber: number): string
 	return "Invalid stage number!"
 end
 
+--[[
+Teleport the player to a checkpoint number.
+
+@param character - The character of the player to teleport
+@param checkpointNumber - The checkpoint number to teleport to
+]]
+function Checkpoints.teleportToCheckpoint(character: Model, checkpointNumber: number)
+	if checkpointNumber < Checkpoints.CHECKPOINT_START_VALUE then
+		warn(
+			`Checkpoint number ({checkpointNumber}) is less than the start value ({Checkpoints.CHECKPOINT_START_VALUE}), not teleporting.`
+		)
+		return
+	end
+
+	local player = Players:GetPlayerFromCharacter(character)
+
+	if checkpointNumber > (tonumber(player:GetAttribute("FarthestStage")) or 0) then
+		return
+	end
+
+	local checkpointPart = nil
+
+	-- Find the checkpoint part with the given stage number
+	for _, obj in ipairs(Checkpoints.CHECKPOINTS_FOLDER:GetChildren()) do
+		if not obj:IsA("BasePart") or obj.Name ~= "Checkpoint" then
+			continue
+		end
+
+		local stageNumber = obj:WaitForChild("StageNumber")
+		if not stageNumber or not stageNumber:IsA("IntValue") then
+			continue
+		end
+
+		if stageNumber.Value == checkpointNumber then
+			checkpointPart = obj
+			break
+		end
+	end
+
+	if not checkpointPart then
+		warn(`Checkpoint part not found for stage {checkpointNumber}`)
+		return
+	end
+
+	local checkpointCFrame = checkpointPart.CFrame
+	local offset = CFrame.new(0, 3, 0) -- Place player a few studs above
+	local rotationOffset = CFrame.Angles(0, math.rad(90), 0)
+
+	-- Update player position and orientation to match checkpoint's
+	local finalCFrame = checkpointCFrame * rotationOffset * offset
+
+	-- Make character jump to break out of client objects
+	local humanoid = character:WaitForChild("Humanoid") :: Humanoid
+	humanoid.Jump = true
+
+	task.wait(0.05) -- Wait for jump first
+
+	local humanoidRootPart = character:WaitForChild("HumanoidRootPart") :: Part
+	humanoidRootPart.CFrame = finalCFrame
+	updateCamera(finalCFrame)
+end
+
 local NUMBERS_TO_NUMERALS = {
 	{ 1000, "M" },
 	{ 900, "CM" },
@@ -131,7 +165,7 @@ Convert an integer to a roman numeral.
 @param num - Number to convert
 @return Roman numeral
 ]]
-function checkpoints.numberToRoman(num: number): string
+function Checkpoints.numberToRoman(num: number): string
 	local roman = ""
 
 	for _, pair in ipairs(NUMBERS_TO_NUMERALS) do
@@ -145,4 +179,4 @@ function checkpoints.numberToRoman(num: number): string
 	return roman
 end
 
-return checkpoints
+return Checkpoints

@@ -9,7 +9,7 @@ local Easing = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("Ea
 
 local LocalPlayer = Players.LocalPlayer
 
-local SpotlightToggleEvent = ReplicatedStorage:WaitForChild("SpotlightToggleEvent")
+local SpotlightToggleEvent = ReplicatedStorage:WaitForChild("SpotlightToggleEvent") :: RemoteEvent
 
 local RIG_NAMES = { "MoonRig", "MoonBounceRig", "MoonBounceFarRig" }
 

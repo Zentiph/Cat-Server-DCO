@@ -26,6 +26,9 @@
     "Workspace": {
       "CustomClientObjects": {
         "$className": "Folder",
+        "Checkpoints": {
+          "$path": "src/cco/Checkpoints"
+        },
         "SpotlightChangers": {
           "$path": "src/cco/SpotlightChangers"
         },

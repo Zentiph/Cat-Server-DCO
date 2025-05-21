@@ -130,7 +130,7 @@ return function()
 			end
 
 			for _, obj in ipairs(zonesFolder:GetChildren()) do
-				if not obj:IsA("BasePart") then
+				if not obj:IsA("BasePart") and obj.Name ~= "Zone" then
 					continue
 				end
 

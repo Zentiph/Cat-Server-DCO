@@ -3,16 +3,16 @@
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
-local JumpEvent: RemoteEvent = ReplicatedStorage:WaitForChild("JumpEvent")
-local DeathEvent: RemoteEvent = ReplicatedStorage:WaitForChild("DeathEvent")
+local JumpEvent = ReplicatedStorage:WaitForChild("JumpEvent") :: RemoteEvent
+local DeathEvent = ReplicatedStorage:WaitForChild("DeathEvent") :: RemoteEvent
 
 local LocalPlayer = Players.LocalPlayer
 
 LocalPlayer.CharacterAdded:Connect(function(character: Model)
-	local humanoid = character:WaitForChild("Humanoid")
+	local humanoid = character:WaitForChild("Humanoid") :: Humanoid
 
 	-- Track jumps
-	humanoid.StateChanged:Connect(function(_, newState: Enum.HumanoidStateType)
+	humanoid.StateChanged:Connect(function(_oldState, newState: Enum.HumanoidStateType)
 		if newState == Enum.HumanoidStateType.Jumping then
 			JumpEvent:FireServer()
 		end

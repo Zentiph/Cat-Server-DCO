@@ -27,7 +27,7 @@ Players.PlayerAdded:Connect(function(player: Player)
 	until success or retries >= MAX_RETRIES
 
 	if not success then
-		error("Data failed to load after " .. retries .. " attempts.")
+		error(`Data failed to load after {retries} attempts.`)
 	end
 
 	-- Set up leaderstats
@@ -56,11 +56,10 @@ Players.PlayerAdded:Connect(function(player: Player)
 		deathCount = data.Deaths or 0
 
 		print(
-			`Data loaded successfully \{CurrentStage: {currentStage}, `
-				.. `FarthestStage: {farthestStage}, Jumps: {jumpCount}, Deaths: {deathCount}}.`
+			`Data loaded successfully \{CurrentStage: {currentStage}, FarthestStage: {farthestStage}, Jumps: {jumpCount}, Deaths: {deathCount}}.`
 		)
 	else
-		warn("No data was found, using default values...")
+		warn("No data was found, using default values.")
 	end
 
 	stage.Value = currentStage
