@@ -8,7 +8,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Easing = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("Easing"))
 
 local LocalPlayer = Players.LocalPlayer
-local TimeZones = script.Parent
+local TimeZones = script.Parent.Parent
 
 local DEFAULT_TIME = "14:00:00"
 local DEFAULT_TWEEN_DURATION = 3

@@ -9,6 +9,8 @@ local Checkpoints = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChil
 local CheckpointSound = ReplicatedStorage:WaitForChild("CheckpointSound") :: Sound
 local UpdateStatsEvent = ReplicatedStorage:WaitForChild("UpdateStatsEvent") :: RemoteEvent
 
+local CheckpointsFolder = script.Parent.Parent
+
 local debounceArray = {}
 
 local CHECKPOINT_ANIM_DURATION_SECONDS = 1.4
@@ -127,13 +129,13 @@ local function addTouchEvent(checkpoint: BasePart)
 end
 
 return function()
-	if not script.Parent then
+	if not CheckpointsFolder then
 		warn("Checkpoint CCOScript parent not found")
 		return
 	end
 
 	-- Listen for new parts and bind them to the event
-	script.Parent.ChildAdded:Connect(function(child: Instance)
+	CheckpointsFolder.ChildAdded:Connect(function(child: Instance)
 		if not child:IsA("BasePart") then
 			return
 		end
@@ -143,7 +145,7 @@ return function()
 	end)
 
 	-- Bind existing children to touch event
-	for _, obj in pairs(script.Parent:GetChildren()) do
+	for _, obj in pairs(CheckpointsFolder:GetChildren()) do
 		if obj:IsA("BasePart") then
 			setNameToRoman(obj)
 			addTouchEvent(obj)

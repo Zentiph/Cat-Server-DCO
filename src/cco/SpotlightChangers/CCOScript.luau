@@ -7,15 +7,18 @@ local TweenService = game:GetService("TweenService")
 
 local Easing = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("Easing"))
 
+local SpotlightToggleEvent = ReplicatedStorage:WaitForChild("SpotlightToggleEvent") :: RemoteEvent
+
 local LocalPlayer = Players.LocalPlayer
 
-local SpotlightToggleEvent = ReplicatedStorage:WaitForChild("SpotlightToggleEvent") :: RemoteEvent
+local SpotlightChangers = script.Parent.Parent
 
 local RIG_NAMES = { "MoonRig", "MoonBounceRig", "MoonBounceFarRig" }
 
 local enabled = false
 local connection = nil
 local currentTweens = {}
+local debounceArray = {}
 
 local moonRig = Instance.new("Part")
 moonRig.Name = "MoonRig"
@@ -123,7 +126,7 @@ local function playerTouched(touch: BasePart): boolean
 end
 
 local function addTouchEvent(part: BasePart)
-	local debounce = false
+	debounceArray[part] = false
 
 	local easingConfig = part:WaitForChild("Easing")
 	if not easingConfig or not easingConfig:IsA("Configuration") then
@@ -145,21 +148,21 @@ local function addTouchEvent(part: BasePart)
 
 	if part.Name == "SpotlightActivator" then
 		part.Touched:Connect(function(hit: BasePart)
-			if not debounce and playerTouched(hit) then
-				debounce = true
+			if not debounceArray[part] and playerTouched(hit) then
+				debounceArray[part] = true
 				setSpotlightActiveState(true, duration.Value, easingStyle.Value, easingDirection.Value)
 				task.delay(0.25, function()
-					debounce = false
+					debounceArray[part] = false
 				end)
 			end
 		end)
 	elseif part.Name == "SpotlightDeactivator" then
 		part.Touched:Connect(function(hit: BasePart)
-			if not debounce and playerTouched(hit) then
-				debounce = true
+			if not debounceArray[part] and playerTouched(hit) then
+				debounceArray[part] = true
 				setSpotlightActiveState(false, duration.Value, easingStyle.Value, easingDirection.Value)
 				task.delay(0.25, function()
-					debounce = false
+					debounceArray[part] = false
 				end)
 			end
 		end)
@@ -190,7 +193,7 @@ return function()
 	setUpRuntime()
 
 	-- Listen for new parts and bind them to the event
-	script.Parent.ChildAdded:Connect(function(child: Instance)
+	SpotlightChangers.ChildAdded:Connect(function(child: Instance)
 		if not child:IsA("BasePart") then
 			return
 		end
@@ -200,7 +203,7 @@ return function()
 	end)
 
 	-- Bind existing children to touch event
-	for _, obj in pairs(script.Parent:GetChildren()) do
+	for _, obj in pairs(SpotlightChangers:GetChildren()) do
 		if obj:IsA("BasePart") then
 			obj.Transparency = 1
 			addTouchEvent(obj)

@@ -27,14 +27,30 @@
       "CustomClientObjects": {
         "$className": "Folder",
         "Checkpoints": {
-          "$path": "src/cco/Checkpoints"
+          "$className": "Folder",
+          "Script": {
+            "$path": "src/cco/Checkpoints"
+          }
         },
         "SpotlightChangers": {
-          "$path": "src/cco/SpotlightChangers"
+          "$className": "Folder",
+          "Script": {
+            "$path": "src/cco/SpotlightChangers"
+          }
         },
         "TimeZones": {
-          "$path": "src/cco/TimeZones"
+          "$className": "Folder",
+          "Script": {
+            "$path": "src/cco/TimeZones"
+          }
         }
+      }
+    },
+
+    "StarterGui": {
+      "Gui": {
+        "$className": "Folder",
+        "$path": "src/gui"
       }
     }
   }
