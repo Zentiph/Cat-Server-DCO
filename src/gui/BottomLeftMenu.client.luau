@@ -9,24 +9,23 @@ local frame = PlayerGui:WaitForChild("BottomLeftMenu"):WaitForChild("Frame") :: 
 
 local selectStageButton = frame:WaitForChild("LoadStage") :: TextButton
 local statsButton = frame:WaitForChild("Stats") :: TextButton
--- TODO: EVENTUALLY
--- local settingsButton = frame:WaitForChild("Settings") :: TextButton
+local settingsButton = frame:WaitForChild("Settings") :: TextButton
 
 local stageSelectFrame = PlayerGui:WaitForChild("StageSelect"):WaitForChild("Frame") :: Frame
 local statsFrame = PlayerGui:WaitForChild("Stats"):WaitForChild("Frame") :: Frame
--- local settingsFrame = PlayerGui:WaitForChild("Settings"):WaitForChild("Frame") :: Frame
+local settingsFrame = PlayerGui:WaitForChild("Settings"):WaitForChild("Frame") :: Frame
 
 selectStageButton.MouseButton1Click:Connect(function()
 	-- Flip visibility
 	stageSelectFrame.Visible = not stageSelectFrame.Visible
+
+	-- Disable other menus
 	if statsFrame then
 		statsFrame.Visible = false
 	end
-	--[[
-   if settingsFrame then
-      settingsFrame.Visible = false
-   end
-   ]]
+	if settingsFrame then
+		settingsFrame.Visible = false
+	end
 end)
 
 statsButton.MouseButton1Click:Connect(function()
@@ -48,8 +47,31 @@ statsButton.MouseButton1Click:Connect(function()
 
 	-- Flip visibility
 	statsFrame.Visible = not statsFrame.Visible
-	-- Close other menu
+
+	-- Disable other menus
 	if stageSelectFrame then
 		stageSelectFrame.Visible = false
+	end
+	if settingsFrame then
+		settingsFrame.Visible = false
+	end
+end)
+
+settingsButton.MouseButton1Click:Connect(function()
+	-- Flip visibility
+	settingsFrame.Visible = not settingsFrame.Visible
+
+	if settingsFrame.Visible then
+		-- Set gamemode to the player's current gamemode
+		local currentGamemode = LocalPlayer:GetAttribute("Gamemode")
+		settingsFrame:WaitForChild("GamemodeDisplay").Text = currentGamemode
+	end
+
+	-- Disable other menus
+	if stageSelectFrame then
+		stageSelectFrame.Visible = false
+	end
+	if statsFrame then
+		statsFrame.Visible = false
 	end
 end)

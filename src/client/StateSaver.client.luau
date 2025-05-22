@@ -3,9 +3,12 @@
 -- TODO MODULARIZE THIS
 
 local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
 local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
+
+local DataState = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("DataState"))
 
 local MINIMUM_MARKER_ALPHA = 0.5
 local MAXIMUM_MARKER_ALPHA = 0.95
@@ -42,13 +45,16 @@ local function updateMarkerTransparencies()
 	end
 end
 
+-- Wait for data to load before accessing keybinds
+DataState:WaitUntilLoaded()
+
 UserInputService.InputBegan:Connect(function(input: InputObject, gameProcessedEvent: boolean)
 	if gameProcessedEvent then
 		return
 	end
 
-	-- Save current state on G press
-	if input.KeyCode == Enum.KeyCode.G then
+	-- Save current state
+	if input.KeyCode == Enum.KeyCode[LocalPlayer:GetAttribute("SaveStateKeybind")] then
 		local humanoidRootPart = LocalPlayer.Character:WaitForChild("HumanoidRootPart")
 			or LocalPlayer.CharacterAdded:Wait():WaitForChild("HumanoidRootPart")
 
@@ -94,8 +100,8 @@ UserInputService.InputBegan:Connect(function(input: InputObject, gameProcessedEv
 
 		updateMarkerTransparencies()
 
-	-- Restore most recent state on R press
-	elseif input.KeyCode == Enum.KeyCode.R then
+	-- Restore most recent state
+	elseif input.KeyCode == Enum.KeyCode[LocalPlayer:GetAttribute("LoadStateKeybind")] then
 		local state = stateStack[#stateStack] -- Get the most recent saved state
 		if not state then
 			return
@@ -170,8 +176,8 @@ UserInputService.InputBegan:Connect(function(input: InputObject, gameProcessedEv
 			jumpLocked = false
 		end
 
-	-- Clear most recent state on V press
-	elseif input.KeyCode == Enum.KeyCode.V then
+	-- Clear most recent state
+	elseif input.KeyCode == Enum.KeyCode[LocalPlayer:GetAttribute("DeleteStateKeybind")] then
 		if #stateStack > 0 then
 			-- Remove state and marker from data
 			table.remove(stateStack)
@@ -204,8 +210,8 @@ UserInputService.InputBegan:Connect(function(input: InputObject, gameProcessedEv
 			updateMarkerTransparencies()
 		end
 
-	-- Clear all states on P press
-	elseif input.KeyCode == Enum.KeyCode.P then
+	-- Clear all states
+	elseif input.KeyCode == Enum.KeyCode[LocalPlayer:GetAttribute("DeleteAllStatesKeybind")] then
 		-- Remove all states from the stack
 		for _ = 1, #stateStack do
 			-- TODO: MODULARIZE THIS SINCE USING IT HERE AND ABOVE

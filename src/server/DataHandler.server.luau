@@ -1,10 +1,15 @@
 -- Datastores and leaderstats by gooodblock, leo, and zen
 
+-- TODO: save defaults as consts up here
+
 local DataStoreService = game:GetService("DataStoreService")
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local Checkpoints = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("Checkpoints"))
+local Gamemodes = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("Gamemodes"))
+
+local DataLoadedEvent = ReplicatedStorage:WaitForChild("DataLoadedEvent") :: RemoteEvent
 
 local checkpointData = DataStoreService:GetDataStore("Player_Checkpoint_Data")
 
@@ -49,15 +54,29 @@ Players.PlayerAdded:Connect(function(player: Player)
 	local jumpCount = 0
 	local deathCount = 0
 
+	local gamemode = Gamemodes.Gamemode.Normal
+
+	local saveStateKeybind = "G"
+	local loadStateKeybind = "R"
+	local deleteStateKeybind = "V"
+	local deleteAllStatesKeybind = "P"
+
+	local quickResetKeybind = "T"
+
 	if data ~= nil then
 		currentStage = data.CurrentStage or 0
 		farthestStage = data.FarthestStage or currentStage
 		jumpCount = data.Jumps or 0
 		deathCount = data.Deaths or 0
 
-		print(
-			`Data loaded successfully \{CurrentStage: {currentStage}, FarthestStage: {farthestStage}, Jumps: {jumpCount}, Deaths: {deathCount}}.`
-		)
+		gamemode = data.Gamemode or Gamemodes.Gamemode.Normal
+
+		saveStateKeybind = data.SaveStateKeybind or "G"
+		loadStateKeybind = data.LoadStateKeybind or "R"
+		deleteStateKeybind = data.DeleteStateKeybind or "V"
+		deleteAllStatesKeybind = data.DeleteAllStatesKeybind or "P"
+
+		quickResetKeybind = data.QuickResetKeybind or "T"
 	else
 		warn("No data was found, using default values.")
 	end
@@ -68,6 +87,15 @@ Players.PlayerAdded:Connect(function(player: Player)
 	player:SetAttribute("FarthestStage", farthestStage)
 	player:SetAttribute("Jumps", jumpCount)
 	player:SetAttribute("Deaths", deathCount)
+
+	player:SetAttribute("Gamemode", gamemode)
+
+	player:SetAttribute("SaveStateKeybind", saveStateKeybind)
+	player:SetAttribute("LoadStateKeybind", loadStateKeybind)
+	player:SetAttribute("DeleteStateKeybind", deleteStateKeybind)
+	player:SetAttribute("DeleteAllStatesKeybind", deleteAllStatesKeybind)
+
+	player:SetAttribute("QuickResetKeybind", quickResetKeybind)
 
 	-- Teleport the player to their last visited checkpoint
 	player.CharacterAdded:Connect(function(character: Model)
@@ -82,6 +110,8 @@ Players.PlayerAdded:Connect(function(player: Player)
 			Checkpoints.teleportToCheckpoint(player.Character, stage.Value)
 		end)
 	end
+
+	DataLoadedEvent:FireClient(player)
 end)
 
 -- Save data on player leave
@@ -98,6 +128,15 @@ Players.PlayerRemoving:Connect(function(player: Player)
 				FarthestStage = player:GetAttribute("FarthestStage") or leaderstats.Stage.Value,
 				Jumps = player:GetAttribute("Jumps") or 0,
 				Deaths = player:GetAttribute("Deaths") or 0,
+
+				Gamemode = player:GetAttribute("Gamemode") or Gamemodes.Gamemode.Normal,
+
+				SaveStateKeybind = player:GetAttribute("SaveStateKeybind") or "G",
+				LoadStateKeybind = player:GetAttribute("LoadStateKeybind") or "R",
+				DeleteStateKeybind = player:GetAttribute("DeleteStateKeybind") or "V",
+				DeleteAllStatesKeybind = player:GetAttribute("DeleteAllStatesKeybind") or "P",
+
+				QuickResetKeybind = player:GetAttribute("QuickResetKeybind") or "T",
 			})
 		end)
 
@@ -108,10 +147,6 @@ Players.PlayerRemoving:Connect(function(player: Player)
 	until success or retries >= MAX_RETRIES
 
 	if not success then
-		error(`Data failed to load after {retries} attempts.`)
-	end
-
-	if success then
-		print("Data saved!")
+		error(`Data failed to save after {retries} attempts.`)
 	end
 end)
