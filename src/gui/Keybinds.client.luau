@@ -1,5 +1,6 @@
 -- Keybind GUI script by zen
 
+local ContextActionService = game:GetService("ContextActionService")
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local UserInputService = game:GetService("UserInputService")
@@ -19,6 +20,8 @@ local deleteAllStatesKeybindButton = keybindsFrame:WaitForChild("DeleteAllStates
 
 local quickResetKeybindButton = keybindsFrame:WaitForChild("QuickResetKeybind") :: TextButton
 
+local resultLabel = keybindsFrame:WaitForChild("ResultLabel") :: TextLabel
+
 local closeButton = keybindsFrame:WaitForChild("Close") :: TextButton
 
 local keybindListener = nil
@@ -33,12 +36,23 @@ local INVALID_KEYBINDS = {
 	Enum.KeyCode.F,
 }
 
+local usedKeys = {}
+
 local function updateKeybindButtons()
-	saveStateKeybindButton.Text = LocalPlayer:GetAttribute("SaveStateKeybind") or ""
-	loadStateKeybindButton.Text = LocalPlayer:GetAttribute("LoadStateKeybind") or ""
-	deleteStateKeybindButton.Text = LocalPlayer:GetAttribute("DeleteStateKeybind") or ""
-	deleteAllStatesKeybindButton.Text = LocalPlayer:GetAttribute("DeleteAllStatesKeybind") or ""
-	quickResetKeybindButton.Text = LocalPlayer:GetAttribute("QuickResetKeybind") or ""
+	saveStateKeybindButton.Text = LocalPlayer:GetAttribute("SaveStateKeybind") or "ERROR"
+	loadStateKeybindButton.Text = LocalPlayer:GetAttribute("LoadStateKeybind") or "ERROR"
+	deleteStateKeybindButton.Text = LocalPlayer:GetAttribute("DeleteStateKeybind") or "ERROR"
+	deleteAllStatesKeybindButton.Text = LocalPlayer:GetAttribute("DeleteAllStatesKeybind") or "ERROR"
+	quickResetKeybindButton.Text = LocalPlayer:GetAttribute("QuickResetKeybind") or "ERROR"
+end
+
+local function updateUsedKeys()
+	usedKeys = {}
+	usedKeys[saveStateKeybindButton.Text] = true
+	usedKeys[loadStateKeybindButton.Text] = true
+	usedKeys[deleteStateKeybindButton.Text] = true
+	usedKeys[deleteAllStatesKeybindButton.Text] = true
+	usedKeys[quickResetKeybindButton.Text] = true
 end
 
 for _, button in pairs({
@@ -49,6 +63,8 @@ for _, button in pairs({
 	quickResetKeybindButton,
 }) do
 	button.MouseButton1Click:Connect(function()
+		resultLabel.Text = ""
+
 		if not keybindListener then
 			keybindListener = button
 			button.Text = "..."
@@ -64,6 +80,25 @@ UserInputService.InputBegan:Connect(function(input: InputObject, gameProcessed: 
 	for _, keybind in pairs(INVALID_KEYBINDS) do
 		if input.KeyCode == keybind then
 			updateKeybindButtons()
+			updateUsedKeys()
+			keybindListener = nil
+
+			resultLabel.TextColor3 = Color3.new(1, 0, 0)
+			resultLabel.Text = "That key is already reserved by Roblox."
+
+			return
+		end
+	end
+
+	for keybind in usedKeys do
+		if input.KeyCode == Enum.KeyCode[keybind] then
+			updateKeybindButtons()
+			updateUsedKeys()
+			keybindListener = nil
+
+			resultLabel.TextColor3 = Color3.new(1, 0, 0)
+			resultLabel.Text = "That key is currently bound to another action."
+
 			return
 		end
 	end
@@ -87,6 +122,9 @@ UserInputService.InputBegan:Connect(function(input: InputObject, gameProcessed: 
 		deleteAllStatesKeybindButton.Text,
 		quickResetKeybindButton.Text
 	)
+
+	resultLabel.TextColor3 = Color3.new(0, 1, 0)
+	resultLabel.Text = "Keybind saved!"
 end)
 
 closeButton.MouseButton1Click:Connect(function()
@@ -94,10 +132,14 @@ closeButton.MouseButton1Click:Connect(function()
 	keybindListener = nil
 	keybindsFrame.Visible = false
 	updateKeybindButtons()
+	updateUsedKeys()
+	ContextActionService:UnbindAction("CaptureKeybind")
 end)
 
 updateKeybindButtons()
+updateUsedKeys()
 
 DataLoadedEvent.OnClientEvent:Connect(function()
 	updateKeybindButtons()
+	updateUsedKeys()
 end)
