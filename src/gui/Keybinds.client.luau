@@ -20,6 +20,8 @@ local deleteAllStatesKeybindButton = keybindsFrame:WaitForChild("DeleteAllStates
 
 local quickResetKeybindButton = keybindsFrame:WaitForChild("QuickResetKeybind") :: TextButton
 
+local resetButton = keybindsFrame:WaitForChild("ResetKeybinds") :: TextButton
+
 local resultLabel = keybindsFrame:WaitForChild("ResultLabel") :: TextLabel
 
 local closeButton = keybindsFrame:WaitForChild("Close") :: TextButton
@@ -125,6 +127,24 @@ UserInputService.InputBegan:Connect(function(input: InputObject, gameProcessed: 
 
 	resultLabel.TextColor3 = Color3.new(0, 1, 0)
 	resultLabel.Text = "Keybind saved!"
+end)
+
+resetButton.MouseButton1Click:Connect(function()
+	-- Reset to default keybinds
+	saveStateKeybindButton.Text = "G"
+	loadStateKeybindButton.Text = "R"
+	deleteStateKeybindButton.Text = "V"
+	deleteAllStatesKeybindButton.Text = "P"
+	quickResetKeybindButton.Text = "T"
+
+	updateUsedKeys()
+	UpdateKeybindsEvent:FireServer(
+		saveStateKeybindButton.Text,
+		loadStateKeybindButton.Text,
+		deleteStateKeybindButton.Text,
+		deleteAllStatesKeybindButton.Text,
+		quickResetKeybindButton.Text
+	)
 end)
 
 closeButton.MouseButton1Click:Connect(function()

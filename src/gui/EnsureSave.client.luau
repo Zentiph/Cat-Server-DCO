@@ -6,8 +6,10 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local LocalPlayer = Players.LocalPlayer
 local PlayerGui = LocalPlayer:WaitForChild("PlayerGui") :: PlayerGui
 
+local Checkpoints = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("Checkpoints"))
 local CloseGui = require(script.Parent:WaitForChild("CloseGui"))
 
+local UpdateStatsEvent = ReplicatedStorage:WaitForChild("UpdateStatsEvent") :: RemoteEvent
 local UpdateGamemodeEvent = ReplicatedStorage:WaitForChild("UpdateGamemodeEvent") :: RemoteEvent
 
 local ensureSaveFrame = PlayerGui:WaitForChild("ScreenGui"):WaitForChild("EnsureSave") :: Frame
@@ -18,8 +20,11 @@ local closeButton = ensureSaveFrame:WaitForChild("Close") :: TextButton
 local settingsFrame = PlayerGui:WaitForChild("ScreenGui"):WaitForChild("Settings") :: Frame
 
 saveButton.MouseButton1Click:Connect(function()
-	-- Close settings and save gamemode
+	-- Save gamemode, teleport to start, and close settings
 	UpdateGamemodeEvent:FireServer(settingsFrame:WaitForChild("GamemodeDisplay").Text)
+
+	UpdateStatsEvent:FireServer(0)
+	Checkpoints.teleportToCheckpoint(LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait(), 0)
 
 	settingsFrame.Visible = false
 	ensureSaveFrame.Visible = false
