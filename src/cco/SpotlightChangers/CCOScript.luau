@@ -151,7 +151,7 @@ local function addTouchEvent(part: BasePart)
 			if not debounceArray[part] and playerTouched(hit) then
 				debounceArray[part] = true
 				setSpotlightActiveState(true, duration.Value, easingStyle.Value, easingDirection.Value)
-				task.delay(0.25, function()
+				task.delay(0.1, function()
 					debounceArray[part] = false
 				end)
 			end
@@ -161,7 +161,7 @@ local function addTouchEvent(part: BasePart)
 			if not debounceArray[part] and playerTouched(hit) then
 				debounceArray[part] = true
 				setSpotlightActiveState(false, duration.Value, easingStyle.Value, easingDirection.Value)
-				task.delay(0.25, function()
+				task.delay(0.1, function()
 					debounceArray[part] = false
 				end)
 			end

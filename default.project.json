@@ -32,6 +32,12 @@
             "$path": "src/cco/Checkpoints"
           }
         },
+        "Healbricks": {
+          "$className": "Folder",
+          "Script": {
+            "$path": "src/cco/Healbricks"
+          }
+        },
         "SpotlightChangers": {
           "$className": "Folder",
           "Script": {
