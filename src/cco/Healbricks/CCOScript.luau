@@ -50,7 +50,7 @@ local function addTouchEvent(part: BasePart)
 
 		TweenService:Create(
 			vignette,
-			TweenInfo.new(0.25, Enum.EasingStyle.Sine, Enum.EasingDirection.Out),
+			TweenInfo.new(0.1, Enum.EasingStyle.Sine, Enum.EasingDirection.Out),
 			{ ImageTransparency = 1 }
 		):Play()
 	end)
