@@ -5,15 +5,15 @@ local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
 local PlayerGui = LocalPlayer:WaitForChild("PlayerGui") :: PlayerGui
 
-local frame = PlayerGui:WaitForChild("BottomLeftMenu"):WaitForChild("Frame") :: Frame
+local frame = PlayerGui:WaitForChild("ScreenGui"):WaitForChild("BottomLeftMenu") :: Frame
 
 local selectStageButton = frame:WaitForChild("LoadStage") :: TextButton
 local statsButton = frame:WaitForChild("Stats") :: TextButton
 local settingsButton = frame:WaitForChild("Settings") :: TextButton
 
-local stageSelectFrame = PlayerGui:WaitForChild("StageSelect"):WaitForChild("Frame") :: Frame
-local statsFrame = PlayerGui:WaitForChild("Stats"):WaitForChild("Frame") :: Frame
-local settingsFrame = PlayerGui:WaitForChild("Settings"):WaitForChild("Frame") :: Frame
+local stageSelectFrame = PlayerGui:WaitForChild("ScreenGui"):WaitForChild("StageSelect") :: Frame
+local statsFrame = PlayerGui:WaitForChild("ScreenGui"):WaitForChild("Stats") :: Frame
+local settingsFrame = PlayerGui:WaitForChild("ScreenGui"):WaitForChild("Settings") :: Frame
 
 selectStageButton.MouseButton1Click:Connect(function()
 	-- Flip visibility

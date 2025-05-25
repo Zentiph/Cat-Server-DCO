@@ -10,12 +10,12 @@ local CloseGui = require(script.Parent:WaitForChild("CloseGui"))
 
 local UpdateGamemodeEvent = ReplicatedStorage:WaitForChild("UpdateGamemodeEvent") :: RemoteEvent
 
-local ensureSaveFrame = PlayerGui:WaitForChild("EnsureSave"):WaitForChild("Frame") :: Frame
+local ensureSaveFrame = PlayerGui:WaitForChild("ScreenGui"):WaitForChild("EnsureSave") :: Frame
 
 local saveButton = ensureSaveFrame:WaitForChild("Save") :: TextButton
 local closeButton = ensureSaveFrame:WaitForChild("Close") :: TextButton
 
-local settingsFrame = PlayerGui:WaitForChild("Settings"):WaitForChild("Frame") :: Frame
+local settingsFrame = PlayerGui:WaitForChild("ScreenGui"):WaitForChild("Settings") :: Frame
 
 saveButton.MouseButton1Click:Connect(function()
 	-- Close settings and save gamemode

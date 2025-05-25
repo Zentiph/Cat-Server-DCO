@@ -7,12 +7,12 @@ local PlayerGui = LocalPlayer:WaitForChild("PlayerGui") :: PlayerGui
 
 local CloseGui = require(script.Parent:WaitForChild("CloseGui"))
 
-local promptSaveFrame = PlayerGui:WaitForChild("PromptSave"):WaitForChild("Frame") :: Frame
+local promptSaveFrame = PlayerGui:WaitForChild("ScreenGui"):WaitForChild("PromptSave") :: Frame
 
 local exitButton = promptSaveFrame:WaitForChild("Exit") :: TextButton
 local closeButton = promptSaveFrame:WaitForChild("Close") :: TextButton
 
-local settingsFrame = PlayerGui:WaitForChild("Settings"):WaitForChild("Frame") :: Frame
+local settingsFrame = PlayerGui:WaitForChild("ScreenGui"):WaitForChild("Settings") :: Frame
 
 exitButton.MouseButton1Click:Connect(function()
 	-- Close settings without save

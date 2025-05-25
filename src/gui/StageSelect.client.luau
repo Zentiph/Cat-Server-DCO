@@ -11,7 +11,7 @@ local UpdateStatsEvent = ReplicatedStorage:WaitForChild("UpdateStatsEvent") :: R
 local LocalPlayer = Players.LocalPlayer
 local PlayerGui = LocalPlayer:WaitForChild("PlayerGui") :: PlayerGui
 
-local frame = PlayerGui:WaitForChild("StageSelect"):WaitForChild("Frame") :: Frame
+local frame = PlayerGui:WaitForChild("ScreenGui"):WaitForChild("StageSelect") :: Frame
 local teleportButton = frame:WaitForChild("Teleport") :: TextButton
 local closeButton = frame:WaitForChild("Close") :: TextButton
 local textBox = frame:WaitForChild("TextBox") :: TextBox

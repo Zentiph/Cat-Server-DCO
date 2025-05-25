@@ -11,7 +11,7 @@ local PlayerGui = LocalPlayer:WaitForChild("PlayerGui") :: PlayerGui
 local DataLoadedEvent = ReplicatedStorage:WaitForChild("DataLoadedEvent") :: RemoteEvent
 local UpdateGamemodeEvent = ReplicatedStorage:WaitForChild("UpdateGamemodeEvent") :: RemoteEvent
 
-local settingsFrame = PlayerGui:WaitForChild("Settings"):WaitForChild("Frame") :: Frame
+local settingsFrame = PlayerGui:WaitForChild("ScreenGui"):WaitForChild("Settings") :: Frame
 
 local gamemodeLeftButton = settingsFrame:WaitForChild("GamemodeLeft") :: TextButton
 local gamemodeRightButton = settingsFrame:WaitForChild("GamemodeRight") :: TextButton
@@ -23,10 +23,10 @@ local applySettingsButton = settingsFrame:WaitForChild("Apply") :: TextButton
 local resetDataButton = settingsFrame:WaitForChild("ResetData") :: TextButton
 local closeButton = settingsFrame:WaitForChild("Close") :: TextButton
 
-local keybindsFrame = PlayerGui:WaitForChild("Keybinds"):WaitForChild("Frame") :: Frame
-local promptSaveFrame = PlayerGui:WaitForChild("PromptSave"):WaitForChild("Frame") :: Frame
-local ensureSaveFrame = PlayerGui:WaitForChild("EnsureSave"):WaitForChild("Frame") :: Frame
-local resetDataFrame = PlayerGui:WaitForChild("ResetData"):WaitForChild("Frame") :: Frame
+local keybindsFrame = PlayerGui:WaitForChild("ScreenGui"):WaitForChild("Keybinds") :: Frame
+local promptSaveFrame = PlayerGui:WaitForChild("ScreenGui"):WaitForChild("PromptSave") :: Frame
+local ensureSaveFrame = PlayerGui:WaitForChild("ScreenGui"):WaitForChild("EnsureSave") :: Frame
+local resetDataFrame = PlayerGui:WaitForChild("ScreenGui"):WaitForChild("ResetData") :: Frame
 
 gamemodeLeftButton.MouseButton1Click:Connect(function()
 	-- Change gamemode to the previous one

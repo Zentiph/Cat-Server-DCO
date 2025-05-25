@@ -11,7 +11,7 @@ local PlayerGui = LocalPlayer:WaitForChild("PlayerGui") :: PlayerGui
 local DataLoadedEvent = ReplicatedStorage:WaitForChild("DataLoadedEvent") :: RemoteEvent
 local UpdateKeybindsEvent = ReplicatedStorage:WaitForChild("UpdateKeybindsEvent") :: RemoteEvent
 
-local keybindsFrame = PlayerGui:WaitForChild("Keybinds"):WaitForChild("Frame") :: Frame
+local keybindsFrame = PlayerGui:WaitForChild("ScreenGui"):WaitForChild("Keybinds") :: Frame
 
 local saveStateKeybindButton = keybindsFrame:WaitForChild("SaveStateKeybind") :: TextButton
 local loadStateKeybindButton = keybindsFrame:WaitForChild("LoadStateKeybind") :: TextButton

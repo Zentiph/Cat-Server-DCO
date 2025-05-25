@@ -10,7 +10,7 @@ local ResetStatsEvent = ReplicatedStorage:WaitForChild("ResetStatsEvent") :: Rem
 local LocalPlayer = Players.LocalPlayer
 local PlayerGui = LocalPlayer:WaitForChild("PlayerGui") :: PlayerGui
 
-local frame = PlayerGui:WaitForChild("ResetData"):WaitForChild("Frame") :: Frame
+local frame = PlayerGui:WaitForChild("ScreenGui"):WaitForChild("ResetData") :: Frame
 
 local resetButton = frame:WaitForChild("ResetData") :: TextButton
 local closeButton = frame:WaitForChild("Close") :: TextButton
