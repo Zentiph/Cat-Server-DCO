@@ -15,7 +15,6 @@ local MAXIMUM_MARKER_ALPHA = 0.95
 local EXPONENTIAL_GROWTH_FACTOR = 0.25
 
 local TIMEOUT_SECONDS = 0.5
-local DEFAULT_JUMP_POWER = 50
 
 local stateStack = {} -- Stack of saved states
 local markerStack = {} -- Stack of corresponding markers
@@ -116,6 +115,7 @@ UserInputService.InputBegan:Connect(function(input: InputObject, gameProcessedEv
 		end
 
 		-- Lock jump
+		local oldJumpPower = humanoid.JumpPower
 		jumpLocked = true
 		humanoid.Jump = false
 		humanoid.JumpPower = 0
@@ -167,12 +167,12 @@ UserInputService.InputBegan:Connect(function(input: InputObject, gameProcessedEv
 				end
 
 				-- Re-enable jumping
-				humanoid.JumpPower = DEFAULT_JUMP_POWER
+				humanoid.JumpPower = oldJumpPower
 				jumpLocked = false
 			end)
 		else
 			-- Already grounded, re-enable jump
-			humanoid.JumpPower = DEFAULT_JUMP_POWER
+			humanoid.JumpPower = oldJumpPower
 			jumpLocked = false
 		end
 
