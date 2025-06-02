@@ -38,6 +38,12 @@
             "$path": "src/cco/Healbricks"
           }
         },
+        "JumpAndSpeedChangers": {
+          "$className": "Folder",
+          "Script": {
+            "$path": "src/cco/JumpAndSpeedChangers"
+          }
+        },
         "SpotlightChangers": {
           "$className": "Folder",
           "Script": {
