@@ -1,7 +1,5 @@
 -- State saver (all jump tool) by zen
 
--- TODO MODULARIZE THIS
-
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
@@ -9,6 +7,8 @@ local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
 
 local DataState = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("DataState"))
+
+local MAX_STATES = 32
 
 local MINIMUM_MARKER_ALPHA = 0.5
 local MAXIMUM_MARKER_ALPHA = 0.95
@@ -20,17 +20,28 @@ local stateStack = {} -- Stack of saved states
 local markerStack = {} -- Stack of corresponding markers
 
 local LocalPlayer = Players.LocalPlayer
-local jumpLocked = false
 
+local jumpLocked = false
+local jumpLockId = 0
+local savedJumpPower = 50
+
+-- Use a combination of raycasts and humanoid states to be sure
 local function isGrounded(humanoidRootPart: Part)
+	local character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+	local humanoid = character:FindFirstChild("Humanoid") :: Humanoid
+	if humanoid and humanoid:GetState() == Enum.HumanoidStateType.Freefall then
+		-- Free-falling, definitely not grounded
+		return false
+	end
+
 	local origin = humanoidRootPart.Position
 	local rayLength = 3.25
 	local directions = {
 		Vector3.new(0, -rayLength, 0), -- Center
 		Vector3.new(1, -rayLength, 0), -- Offset X
 		Vector3.new(-1, -rayLength, 0), -- Offset -X
-		Vector3.new(0, -rayLength, 1), -- Offset Y
-		Vector3.new(0, -rayLength, -1), -- Offset -Y
+		Vector3.new(0, -rayLength, 1), -- Offset Z
+		Vector3.new(0, -rayLength, -1), -- Offset -Z
 	}
 
 	local params = RaycastParams.new()
@@ -39,8 +50,7 @@ local function isGrounded(humanoidRootPart: Part)
 
 	-- Raycast to below player to check if they're on the ground
 	for _, offset in ipairs(directions) do
-		local result = workspace:Raycast(origin + offset * 0.2, Vector3.new(0, -rayLength, 0), params)
-		if result then
+		if workspace:Raycast(origin + Vector3.new(offset.X, 0, offset.Z), Vector3.new(0, -rayLength, 0), params) then
 			return true
 		end
 	end
@@ -56,6 +66,28 @@ local function updateMarkerTransparencies()
 		markerStack[count - i + 1].Transparency = MINIMUM_MARKER_ALPHA
 			+ (MAXIMUM_MARKER_ALPHA - MINIMUM_MARKER_ALPHA) * (1 - math.exp(-EXPONENTIAL_GROWTH_FACTOR * i))
 	end
+end
+
+local function destroyMarker(marker: BasePart)
+	-- Flash red quickly
+	local flashTween =
+		TweenService:Create(marker, TweenInfo.new(0.2, Enum.EasingStyle.Linear), { Color = Color3.new(1, 0, 0) })
+
+	-- Fade out slowly
+	local fadeTween = TweenService:Create(
+		marker,
+		TweenInfo.new(1.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
+		{ Transparency = 1 }
+	)
+
+	-- Play tweens and then destroy marker
+	flashTween:Play()
+	flashTween.Completed:Connect(function()
+		fadeTween:Play()
+		fadeTween.Completed:Connect(function()
+			marker:Destroy()
+		end)
+	end)
 end
 
 -- Wait for data to load before accessing keybinds
@@ -81,6 +113,15 @@ UserInputService.InputBegan:Connect(function(input: InputObject, gameProcessedEv
 			RotVelocity = humanoidRootPart.RotVelocity,
 			Grounded = isGrounded(humanoidRootPart),
 		}
+
+		-- Clamp number of states
+		if #stateStack >= MAX_STATES then
+			local oldestMarker = table.remove(markerStack, 1)
+			if oldestMarker and oldestMarker:IsDescendantOf(workspace) then
+				oldestMarker:Destroy()
+			end
+			table.remove(stateStack, 1)
+		end
 
 		table.insert(stateStack, newState)
 
@@ -129,10 +170,16 @@ UserInputService.InputBegan:Connect(function(input: InputObject, gameProcessedEv
 		end
 
 		-- Lock jump
-		local oldJumpPower = humanoid.JumpPower
-		jumpLocked = true
+		if not jumpLocked then
+			savedJumpPower = humanoid.JumpPower
+		end
+
 		humanoid.Jump = false
 		humanoid.JumpPower = 0
+
+		jumpLockId += 1
+		local currentLockId = jumpLockId
+		jumpLocked = true
 
 		-- Reset motion
 		humanoidRootPart.Velocity = Vector3.zero
@@ -178,15 +225,18 @@ UserInputService.InputBegan:Connect(function(input: InputObject, gameProcessedEv
 					end
 					humanoid.Jump = false
 					RunService.Heartbeat:Wait()
+					print("Waiting")
 				end
 
 				-- Re-enable jumping
-				humanoid.JumpPower = oldJumpPower
-				jumpLocked = false
+				if jumpLockId == currentLockId then
+					humanoid.JumpPower = savedJumpPower
+					jumpLocked = false
+				end
 			end)
 		else
 			-- Already grounded, re-enable jump
-			humanoid.JumpPower = oldJumpPower
+			humanoid.JumpPower = savedJumpPower
 			jumpLocked = false
 		end
 
@@ -197,28 +247,7 @@ UserInputService.InputBegan:Connect(function(input: InputObject, gameProcessedEv
 			table.remove(stateStack)
 			local marker = table.remove(markerStack)
 			if marker and marker:IsDescendantOf(workspace) then
-				-- Flash red quickly
-				local flashTween = TweenService:Create(
-					marker,
-					TweenInfo.new(0.2, Enum.EasingStyle.Linear),
-					{ Color = Color3.new(1, 0, 0) }
-				)
-
-				-- Fade out slowly
-				local fadeTween = TweenService:Create(
-					marker,
-					TweenInfo.new(1.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
-					{ Transparency = 1 }
-				)
-
-				-- Play tweens and then destroy marker
-				flashTween:Play()
-				flashTween.Completed:Connect(function()
-					fadeTween:Play()
-					fadeTween.Completed:Connect(function()
-						marker:Destroy()
-					end)
-				end)
+				destroyMarker(marker)
 			end
 
 			updateMarkerTransparencies()
@@ -228,32 +257,10 @@ UserInputService.InputBegan:Connect(function(input: InputObject, gameProcessedEv
 	elseif input.KeyCode == Enum.KeyCode[LocalPlayer:GetAttribute("DeleteAllStatesKeybind")] then
 		-- Remove all states from the stack
 		for _ = 1, #stateStack do
-			-- TODO: MODULARIZE THIS SINCE USING IT HERE AND ABOVE
 			table.remove(stateStack)
 			local marker = table.remove(markerStack)
 			if marker and marker:IsDescendantOf(workspace) then
-				-- Flash red quickly
-				local flashTween = TweenService:Create(
-					marker,
-					TweenInfo.new(0.2, Enum.EasingStyle.Linear),
-					{ Color = Color3.new(1, 0, 0) }
-				)
-
-				-- Fade out slowly
-				local fadeTween = TweenService:Create(
-					marker,
-					TweenInfo.new(1.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
-					{ Transparency = 1 }
-				)
-
-				-- Play tweens and then destroy marker
-				flashTween:Play()
-				flashTween.Completed:Connect(function()
-					fadeTween:Play()
-					fadeTween.Completed:Connect(function()
-						marker:Destroy()
-					end)
-				end)
+				destroyMarker(marker)
 			end
 		end
 
