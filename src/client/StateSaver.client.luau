@@ -225,7 +225,6 @@ UserInputService.InputBegan:Connect(function(input: InputObject, gameProcessedEv
 					end
 					humanoid.Jump = false
 					RunService.Heartbeat:Wait()
-					print("Waiting")
 				end
 
 				-- Re-enable jumping

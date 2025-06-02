@@ -44,6 +44,12 @@
             "$path": "src/cco/JumpAndSpeedChangers"
           }
         },
+        "PropertyChangers": {
+          "$className": "Folder",
+          "Script": {
+            "$path": "src/cco/PropertyChangers"
+          }
+        },
         "SpotlightChangers": {
           "$className": "Folder",
           "Script": {
