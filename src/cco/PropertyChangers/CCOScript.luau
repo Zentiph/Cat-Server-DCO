@@ -7,17 +7,48 @@ local PropertyChangers = workspace:WaitForChild("CustomClientObjects"):FindFirst
 
 local LocalPlayer = Players.LocalPlayer
 
+local DEFAULT_TWEEN = false
+local DEFAULT_DURATION = 1
+
 local WHITELISTED_PROPERTIES = {
-	"CastShadow",
-	"Color",
-	"Reflectance",
-	"Transparency",
-	"CanCollide",
+	-- Physics & Collision
 	"Anchored",
-	"Color3",
+	"CanCollide",
+	"Massless",
+
+	-- Appearance
+	"Color",
+	"Transparency",
+	"Reflectance",
+	"Material",
+	"MaterialVariant",
+	"CastShadow",
+
+	-- GUI
+	"Visible",
 	"ZIndex",
+	"ImageColor3",
+	"TextColor3",
+	"BackgroundColor3",
+	"BackgroundTransparency",
+	"TextTransparency",
+
+	-- Lighting
+	"Brightness",
+	"Range",
+	"Color3",
+	"Enabled",
 }
-local SUPPORTED_TYPES = table.freeze({
+local NON_TWEENABLE_PROPERTIES = table.freeze({
+	Anchored = true,
+	CanCollide = true,
+	CastShadow = true,
+	Massless = true,
+	Enabled = true,
+	Visible = true,
+})
+
+local WHITELISTED_TYPES = table.freeze({
 	["number"] = true,
 	["boolean"] = true,
 	["Color3"] = true,
@@ -28,83 +59,108 @@ local debounceArray = {}
 
 type Type = number | boolean | BrickColor | Color3 | EnumItem
 
-local function coerceValue(rawValue: string, targetType: string): Type?
-	local coercedValue = rawValue
-
-	-- Convert the raw value (string) to the given target type
-	if targetType == "number" then
-		coercedValue = tonumber(rawValue)
-	elseif targetType == "boolean" then
-		coercedValue = rawValue == "true"
-	elseif targetType == "BrickColor" then
-		warn("[PropertyChanger] BrickColor is not a supported property to change, use Color instead")
-		coercedValue = nil
-	elseif targetType == "Color3" then
-		local r, g, b = rawValue:match("(%d+)%s*,%s*(%d+)%s*,%s*(%d+)")
-		if r and g and b then
-			coercedValue = Color3.fromRGB(tonumber(r), tonumber(g), tonumber(b))
-		else
-			coercedValue = nil
-		end
-	elseif targetType == "EnumItem" then
-		coercedValue = Enum[rawValue:match("^(%w+)%.(%w+)$")]
-			and Enum[rawValue:match("^(%w+)%.(%w+)$")][rawValue:match("%w+$")]
-	else
-		coercedValue = nil
-	end
-
-	return coercedValue
+local function isTweenableProperty(property: string, value: any)
+	return not NON_TWEENABLE_PROPERTIES[property] and typeof(value) ~= "boolean" and typeof(value) ~= "Instance"
 end
 
-local function setProperty(target: Instance, property: string, value: string)
-	local success, err = pcall(function()
-		local currentValue = target[property]
-		target[property] = coerceValue(value, typeof(currentValue))
+-- Convert the raw value (string) to the given target type
+local function coerceValue(rawValue: string, targetType: string): Type?
+	if targetType == "number" then
+		return tonumber(rawValue)
+	end
+
+	if targetType == "boolean" then
+		return rawValue == "true"
+	end
+
+	if targetType == "BrickColor" then
+		warn("[PropertyChanger] BrickColor is not a supported property to change, use Color instead")
+	end
+
+	if targetType == "Color3" then
+		local r, g, b = rawValue:match("(%d+)%s*,%s*(%d+)%s*,%s*(%d+)")
+		if r and g and b then
+			return Color3.fromRGB(tonumber(r), tonumber(g), tonumber(b))
+		end
+	end
+
+	if targetType == "EnumItem" then
+		return Enum[rawValue:match("^(%w+)%.(%w+)$")] and Enum[rawValue:match("^(%w+)%.(%w+)$")][rawValue:match("%w+$")]
+	end
+
+	return nil
+end
+
+local function tweenProperty(target: Instance, property: string, value: Type, duration: number)
+	if not isTweenableProperty(property, value) then
+		target[property] = value
+		return
+	end
+
+	local success, tweenOrError = pcall(function()
+		return TweenService:Create(
+			target,
+			TweenInfo.new(duration, Enum.EasingStyle.Cubic, Enum.EasingDirection.Out),
+			{ [property] = value }
+		)
 	end)
 
-	if not success then
-		error(
-			`[PropertyChanger] Failed to set property '{property}' of {target.ClassName}'`
-				.. ` at '{target:GetFullName()}': {tostring(err)}`
+	if success then
+		tweenOrError:Play()
+	else
+		warn(
+			`[PropertyChanger] Failed to tween property '{property}' of '{target:GetFullName()}': {tostring(
+				tweenOrError
+			)}`
 		)
+		target[property] = value -- Fallback
 	end
 end
 
 local function addTouchEvent(part: BasePart)
-	debounceArray[part] = false
-
 	local target = part:FindFirstChild("Target") :: ObjectValue
-	if not target then
+	local targetInstance = target and target.Value
+	if not targetInstance then
+		warn("[PropertyChanger] Missing ObjectValue 'Target' in PropertyChanger")
 		return
 	end
 
 	if part.Name == "PropertyChanger" then
+		debounceArray[part] = false
+
 		local properties = part:FindFirstChild("Properties") :: Folder
 		if not properties then
+			warn("[PropertyChanger] Missing Folder 'Properties' in PropertyChanger")
 			return
 		end
 
 		local propertyList = {}
 
-		for _, obj in pairs(properties:GetChildren()) do
-			if not obj:IsA("Configuration") or obj.Name ~= "Property" then
+		for _, propertyConfig in pairs(properties:GetChildren()) do
+			if not propertyConfig:IsA("Configuration") or propertyConfig.Name ~= "Property" then
 				continue
 			end
 
-			local propertyName = obj:FindFirstChild("PropertyName") :: StringValue
-			local propertyValue = obj:FindFirstChild("PropertyValue") :: StringValue
-			local shouldTween = obj:FindFirstChild("Tween") :: BoolValue?
-			local transitionDuration = obj:FindFirstChild("TransitionDuration") :: NumberValue?
+			local propertyName = propertyConfig:FindFirstChild("PropertyName") :: StringValue
+			local propertyValue = propertyConfig:FindFirstChild("PropertyValue") :: StringValue
+			-- These can be null, just default to no tween and 1 second respectively if null
+			local shouldTween = propertyConfig:FindFirstChild("Tween") :: BoolValue?
+			local transitionDuration = propertyConfig:FindFirstChild("TransitionDuration") :: NumberValue?
 
-			if not propertyName or not propertyValue then
+			if not propertyName then
+				warn("[PropertyChanger] Missing StringValue 'PropertyName' in PropertyChanger")
+				continue
+			end
+			if not propertyValue then
+				warn("[PropertyChanger] Missing StringValue 'PropertyValue' in PropertyChanger")
 				continue
 			end
 
 			table.insert(propertyList, {
 				Name = propertyName.Value,
 				Value = propertyValue.Value,
-				Tween = shouldTween and shouldTween.Value or false,
-				Duration = transitionDuration and transitionDuration.Value or 1,
+				Tween = shouldTween and shouldTween.Value or DEFAULT_TWEEN,
+				Duration = transitionDuration and transitionDuration.Value or DEFAULT_DURATION,
 			})
 		end
 
@@ -116,21 +172,19 @@ local function addTouchEvent(part: BasePart)
 			debounceArray[part] = true
 
 			for _, property in pairs(propertyList) do
-				local currentValue = target.Value[property.Name]
-				local newValue = coerceValue(property.Value, typeof(currentValue))
-
+				local newValue = coerceValue(property.Value, typeof(targetInstance[property.Name]))
 				if newValue == nil then
+					warn(
+						`[PropertyChanger] Could not change property '{property.Name}'`
+							.. ` of '{targetInstance:GetFullName()}' to '{property.Value}'`
+					)
 					continue
 				end
 
 				if property.Tween then
-					TweenService:Create(
-						target.Value,
-						TweenInfo.new(property.Duration, Enum.EasingStyle.Cubic, Enum.EasingDirection.Out),
-						{ [property.Name] = newValue }
-					):Play()
+					tweenProperty(targetInstance, property.Name, newValue, property.Duration)
 				else
-					setProperty(target.Value, property.Name, property.Value)
+					targetInstance[property.Name] = newValue
 				end
 			end
 
@@ -139,18 +193,19 @@ local function addTouchEvent(part: BasePart)
 			end)
 		end)
 	elseif part.Name == "PropertyReverter" then
+		debounceArray[part] = false
+
 		local shouldTween = part:FindFirstChild("Tween") :: BoolValue?
 		local transitionDuration = part:FindFirstChild("TransitionDuration") :: NumberValue?
 
 		local savedProperties = {}
-		local targetInstance = target.Value
 		-- Capture initial instance state
 		for _, property in pairs(WHITELISTED_PROPERTIES) do
 			local success, value = pcall(function()
 				return targetInstance[property]
 			end)
 
-			if success and SUPPORTED_TYPES[typeof(value)] then
+			if success and WHITELISTED_TYPES[typeof(value)] then
 				savedProperties[property] = value
 			end
 		end
@@ -163,19 +218,11 @@ local function addTouchEvent(part: BasePart)
 			debounceArray[part] = true
 
 			for property, value in pairs(savedProperties) do
-				local canTween = shouldTween and shouldTween.Value
-
-				if canTween then
+				if shouldTween and shouldTween.Value then
 					local duration = transitionDuration and transitionDuration.Value or 1
-					TweenService:Create(
-						targetInstance,
-						TweenInfo.new(duration, Enum.EasingStyle.Cubic, Enum.EasingDirection.Out),
-						{ [property] = value }
-					):Play()
+					tweenProperty(targetInstance, property, value, duration)
 				else
-					pcall(function()
-						targetInstance[property] = value
-					end)
+					targetInstance[property] = value
 				end
 			end
 
@@ -187,7 +234,7 @@ local function addTouchEvent(part: BasePart)
 end
 
 return function()
-	PropertyChangers.ChildAdded:Connect(function(child: Instance)
+	PropertyChangers.ChildAdded:Connect(function(child)
 		if not child:IsA("BasePart") then
 			return
 		end
@@ -196,10 +243,12 @@ return function()
 		addTouchEvent(child)
 	end)
 
-	for _, obj in pairs(PropertyChangers:GetChildren()) do
-		if obj:IsA("BasePart") then
-			obj.Transparency = 1
-			addTouchEvent(obj)
+	for _, child in pairs(PropertyChangers:GetChildren()) do
+		if not child:IsA("BasePart") then
+			continue
 		end
+
+		child.Transparency = 1
+		addTouchEvent(child)
 	end
 end
