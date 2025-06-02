@@ -24,14 +24,28 @@ local jumpLocked = false
 
 local function isGrounded(humanoidRootPart: Part)
 	local origin = humanoidRootPart.Position
-	local direction = Vector3.new(0, -3, 0)
+	local rayLength = 3.25
+	local directions = {
+		Vector3.new(0, -rayLength, 0), -- Center
+		Vector3.new(1, -rayLength, 0), -- Offset X
+		Vector3.new(-1, -rayLength, 0), -- Offset -X
+		Vector3.new(0, -rayLength, 1), -- Offset Y
+		Vector3.new(0, -rayLength, -1), -- Offset -Y
+	}
+
 	local params = RaycastParams.new()
 	params.FilterDescendantsInstances = { LocalPlayer.Character }
 	params.FilterType = Enum.RaycastFilterType.Exclude
 
 	-- Raycast to below player to check if they're on the ground
-	local result = workspace:Raycast(origin, direction, params)
-	return result ~= nil
+	for _, offset in ipairs(directions) do
+		local result = workspace:Raycast(origin + offset * 0.2, Vector3.new(0, -rayLength, 0), params)
+		if result then
+			return true
+		end
+	end
+
+	return false
 end
 
 local function updateMarkerTransparencies()
