@@ -10,7 +10,12 @@ local LocalPlayer = Players.LocalPlayer
 
 local HealEvent = ReplicatedStorage:WaitForChild("HealEvent") :: RemoteEvent
 
-local function playerTouched(touch: BasePart): boolean
+local vignette = LocalPlayer:WaitForChild("PlayerGui")
+	:WaitForChild("HealGui")
+	:WaitForChild("HealFlash")
+	:WaitForChild("Vignette") :: ImageLabel
+
+local function playerTouched(touch): boolean
 	if not touch.Parent then
 		return false
 	end
@@ -18,7 +23,7 @@ local function playerTouched(touch: BasePart): boolean
 	return Players:GetPlayerFromCharacter(touch.Parent) == LocalPlayer
 end
 
-local function addTouchEvent(part: BasePart)
+local function addTouchEvent(part)
 	local healAmount = part:WaitForChild("HealPower")
 	if not healAmount or not healAmount:IsA("IntValue") then
 		return
@@ -28,7 +33,7 @@ local function addTouchEvent(part: BasePart)
 		return
 	end
 
-	part.Touched:Connect(function(hit: BasePart)
+	part.Touched:Connect(function(hit)
 		if not playerTouched(hit) then
 			return
 		end
@@ -36,16 +41,12 @@ local function addTouchEvent(part: BasePart)
 
 		-- Flash green vignette to mirror taking damage, only if the player is healing
 		local character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
-		local humanoid = character:WaitForChild("Humanoid") :: Humanoid
+		local humanoid = character:FindFirstChild("Humanoid") :: Humanoid
 
 		if humanoid and humanoid.Health >= humanoid.MaxHealth then
 			return
 		end
 
-		local vignette = LocalPlayer:WaitForChild("PlayerGui")
-			:WaitForChild("HealGui")
-			:WaitForChild("HealFlash")
-			:WaitForChild("Vignette") :: ImageLabel
 		vignette.ImageTransparency = 0
 
 		TweenService:Create(
@@ -58,7 +59,7 @@ end
 
 return function()
 	-- Listen for new parts and bind them to the event
-	Healbricks.ChildAdded:Connect(function(child: Instance)
+	Healbricks.ChildAdded:Connect(function(child)
 		if not child:IsA("BasePart") then
 			return
 		end

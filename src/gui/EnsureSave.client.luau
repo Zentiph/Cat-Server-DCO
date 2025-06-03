@@ -21,7 +21,7 @@ local settingsFrame = PlayerGui:WaitForChild("ScreenGui"):WaitForChild("Settings
 
 saveButton.MouseButton1Click:Connect(function()
 	-- Save gamemode, teleport to start, and close settings
-	UpdateGamemodeEvent:FireServer(settingsFrame:WaitForChild("GamemodeDisplay").Text)
+	UpdateGamemodeEvent:FireServer(settingsFrame:FindFirstChild("GamemodeDisplay").Text)
 
 	UpdateStatsEvent:FireServer(0)
 	Checkpoints.teleportToCheckpoint(LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait(), 0)

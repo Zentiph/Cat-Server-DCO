@@ -65,6 +65,10 @@ end
 
 -- Convert the raw value (string) to the given target type
 local function coerceValue(rawValue: string, targetType: string): Type?
+	if not WHITELISTED_TYPES[targetType] then
+		warn(`[PropertyChanger] Unsupported property type '{targetType}'`)
+	end
+
 	if targetType == "number" then
 		return tonumber(rawValue)
 	end

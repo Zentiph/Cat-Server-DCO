@@ -4,9 +4,9 @@ if not game:IsLoaded() then
 	game.Loaded:Wait()
 end
 
-local CCO_FOLDER = workspace:WaitForChild("CustomClientObjects")
+local ccoFolder = workspace:WaitForChild("CustomClientObjects")
 
-for _, obj in ipairs(CCO_FOLDER:GetChildren()) do
+for _, obj in ipairs(ccoFolder:GetChildren()) do
 	if not obj:IsA("Folder") then
 		continue
 	end
@@ -17,8 +17,13 @@ for _, obj in ipairs(CCO_FOLDER:GetChildren()) do
 		end
 
 		local ccoScript = child:FindFirstChild("CCOScript")
-		if not ccoScript then
+		if not ccoScript or not ccoScript:IsA("ModuleScript") then
 			warn(`CCO script not found in '{child:GetFullName()}'`)
+			continue
+		end
+
+		local enabled = ccoScript:FindFirstChild("Enabled")
+		if enabled and enabled:IsA("BoolValue") and not enabled.Value then
 			continue
 		end
 

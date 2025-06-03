@@ -5,8 +5,6 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
 local TweenService = game:GetService("TweenService")
 
-local Easing = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("Easing"))
-
 local SpotlightToggleEvent = ReplicatedStorage:WaitForChild("SpotlightToggleEvent") :: RemoteEvent
 
 local LocalPlayer = Players.LocalPlayer
@@ -44,21 +42,15 @@ moonBounceRig.Parent = workspace
 local moonBounce = moonLight:Clone()
 moonBounce.Parent = moonBounceRig
 
-local moonBounceFarRig = moonBounceRig:Clone()
+local moonBounceFarRig = moonRig:Clone()
 moonBounceFarRig.Name = "MoonBounceFarRig"
 moonBounceFarRig.Parent = workspace
 
-local moonBounceFar = moonBounce:Clone()
+local moonBounceFar = moonLight:Clone()
 moonBounceFar.Parent = moonBounceFarRig
 
-local function animateBrightness(
-	target: number,
-	duration: number,
-	easingStyle: string,
-	easingDirection: string,
-	disableAfter: boolean?
-)
-	local info = Easing.toTweenInfo(easingStyle, easingDirection, duration)
+local function animateBrightness(target: number, duration: number, disableAfter: boolean?)
+	local info = TweenInfo.new(duration, Enum.EasingStyle.Cubic, Enum.EasingDirection.Out)
 
 	-- Cancel existing light tweens
 	for _, tween in pairs(currentTweens) do
@@ -83,7 +75,7 @@ local function animateBrightness(
 	if disableAfter then
 		connection = currentTweens[1].Completed:Connect(function()
 			for _, name in RIG_NAMES do
-				local rig = workspace:WaitForChild(name)
+				local rig = workspace:FindFirstChild(name)
 				local light = rig and rig:FindFirstChildWhichIsA("SpotLight")
 				if light then
 					light.Enabled = false
@@ -97,7 +89,7 @@ local function animateBrightness(
 	end
 end
 
-local function setSpotlightActiveState(state: boolean, duration: number, easingStyle: string?, easingDirection: string?)
+local function setSpotlightActiveState(state: boolean, duration: number)
 	enabled = state
 
 	if state then
@@ -113,7 +105,7 @@ local function setSpotlightActiveState(state: boolean, duration: number, easingS
 	-- If on, set target brightness to 2, otherwise set target to 0
 	local brightnessTarget = state and 2 or 0
 	task.spawn(function()
-		animateBrightness(brightnessTarget, duration, easingStyle or "Linear", easingDirection or "InOut", not state)
+		animateBrightness(brightnessTarget, duration, not state)
 	end)
 end
 
@@ -128,29 +120,13 @@ end
 local function addTouchEvent(part: BasePart)
 	debounceArray[part] = false
 
-	local easingConfig = part:WaitForChild("Easing")
-	if not easingConfig or not easingConfig:IsA("Configuration") then
-		return
-	end
-
-	local easingStyle = easingConfig:WaitForChild("Style")
-	local easingDirection = easingConfig:WaitForChild("Direction")
-	local duration = easingConfig:WaitForChild("TransitionDuration")
-
-	if
-		not (easingStyle and easingDirection and duration)
-		or not easingStyle:IsA("StringValue")
-		or not easingDirection:IsA("StringValue")
-		or not duration:IsA("NumberValue")
-	then
-		return
-	end
+	local duration = part:FindFirstChild("TransitionDuration") :: NumberValue
 
 	if part.Name == "SpotlightActivator" then
 		part.Touched:Connect(function(hit: BasePart)
 			if not debounceArray[part] and playerTouched(hit) then
 				debounceArray[part] = true
-				setSpotlightActiveState(true, duration.Value, easingStyle.Value, easingDirection.Value)
+				setSpotlightActiveState(true, duration.Value)
 				task.delay(0.1, function()
 					debounceArray[part] = false
 				end)
@@ -160,7 +136,7 @@ local function addTouchEvent(part: BasePart)
 		part.Touched:Connect(function(hit: BasePart)
 			if not debounceArray[part] and playerTouched(hit) then
 				debounceArray[part] = true
-				setSpotlightActiveState(false, duration.Value, easingStyle.Value, easingDirection.Value)
+				setSpotlightActiveState(false, duration.Value)
 				task.delay(0.1, function()
 					debounceArray[part] = false
 				end)
@@ -175,8 +151,8 @@ local function setUpRuntime()
 			return
 		end
 
-		local character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
-		local humanoidRootPart = character and character:WaitForChild("HumanoidRootPart")
+		local character = LocalPlayer.Character
+		local humanoidRootPart = character and character:FindFirstChild("HumanoidRootPart")
 		if not humanoidRootPart then
 			return
 		end

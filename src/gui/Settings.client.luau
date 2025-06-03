@@ -55,7 +55,7 @@ applySettingsButton.MouseButton1Click:Connect(function()
 	then
 		ensureSaveFrame.Visible = true
 	else
-		UpdateGamemodeEvent:FireServer(settingsFrame:WaitForChild("GamemodeDisplay").Text)
+		UpdateGamemodeEvent:FireServer(settingsFrame:FindFirstChild("GamemodeDisplay").Text)
 
 		settingsFrame.Visible = false
 	end

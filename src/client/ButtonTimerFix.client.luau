@@ -8,22 +8,24 @@
 --       This is a script to fix the button timer issue.
 
 local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local LocalPlayer = Players.LocalPlayer
+
+local buttonsFolder = ReplicatedStorage:WaitForChild("ClientSidedObjects"):WaitForChild("Buttons")
 
 local function onCharacterAdded(character: Model)
 	local humanoid = character:WaitForChild("Humanoid")
 
 	humanoid.Died:Connect(function()
 		-- Remove all button SurfaceGuis (get rid of button timers)
-		for _, obj in pairs(workspace:GetDescendants()) do
-			if
-				obj:IsA("SurfaceGui")
-				and obj.Parent
-				and obj.Parent:IsA("BasePart")
-				and obj.Parent.Name == "ButtonPart"
-			then
-				obj:Destroy()
+		for _, descendant in pairs(buttonsFolder:GetDescendants()) do
+			if descendant:IsA("BasePart") and descendant.Name == "ButtonPart" then
+				for _, child in pairs(descendant:GetChildren()) do
+					if child:IsA("SurfaceGui") then
+						descendant:Destroy()
+					end
+				end
 			end
 		end
 

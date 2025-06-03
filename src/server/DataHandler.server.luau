@@ -16,7 +16,7 @@ local checkpointData = DataStoreService:GetDataStore("Player_Checkpoint_Data")
 local MAX_RETRIES = 3
 
 -- Load data on player join
-Players.PlayerAdded:Connect(function(player: Player)
+Players.PlayerAdded:Connect(function(player)
 	local success, data
 	local retries = 0
 
@@ -98,7 +98,7 @@ Players.PlayerAdded:Connect(function(player: Player)
 	player:SetAttribute("QuickResetKeybind", quickResetKeybind)
 
 	-- Teleport the player to their last visited checkpoint
-	player.CharacterAdded:Connect(function(character: Model)
+	player.CharacterAdded:Connect(function(character)
 		task.defer(function()
 			Checkpoints.teleportToCheckpoint(character, stage.Value)
 		end)
@@ -115,7 +115,7 @@ Players.PlayerAdded:Connect(function(player: Player)
 end)
 
 -- Save data on player leave
-Players.PlayerRemoving:Connect(function(player: Player)
+Players.PlayerRemoving:Connect(function(player)
 	local success, _failure
 	local retries = 0
 

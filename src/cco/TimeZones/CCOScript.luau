@@ -1,11 +1,8 @@
 -- Timezone client object script by zen
 
+local Lighting = game:GetService("Lighting")
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
-local Lighting = game:GetService("Lighting")
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
-
-local Easing = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("Easing"))
 
 local LocalPlayer = Players.LocalPlayer
 local TimeZones = script.Parent.Parent
@@ -16,6 +13,13 @@ local DEFAULT_TWEEN_DURATION = 3
 local activeZones = {}
 local activeTween = nil
 
+function easeInOutCubic(t: number): number
+	if t < 0.5 then
+		return 4 * t * t * t
+	end
+	return 1 - math.pow(-2 * t + 2, 3) / 2
+end
+
 local function timeStringToNumber(timeString: string): number
 	local hours = tonumber(timeString:sub(1, 2)) or 14
 	local minutes = tonumber(timeString:sub(4, 5)) or 0
@@ -24,14 +28,13 @@ local function timeStringToNumber(timeString: string): number
 	return hours + (minutes / 60) + (seconds / 3600)
 end
 
-local function tweenClockTime(fromTime: number, toTime: number, duration: number, easingFunction: ((number) -> number)?)
+local function tweenClockTime(fromTime: number, toTime: number, duration: number)
 	if activeTween then
 		activeTween:Disconnect()
 		activeTween = nil
 	end
 
 	local elapsed = 0
-	local safeEasingFunction = easingFunction or Easing.easeLinear
 
 	-- Normalize times to be within 0-24
 	fromTime %= 24
@@ -54,7 +57,7 @@ local function tweenClockTime(fromTime: number, toTime: number, duration: number
 		elapsed = elapsed + dt
 		local alpha = math.clamp(elapsed / duration, 0, 1)
 
-		local currentTime = (fromTime + direction * durationTime * safeEasingFunction(alpha)) % 24
+		local currentTime = (fromTime + direction * durationTime * easeInOutCubic(alpha)) % 24
 
 		Lighting.ClockTime = currentTime
 
@@ -70,8 +73,6 @@ local function updateTime()
 	local highestPriority = -math.huge
 	local bestTime = nil
 
-	local easingStyle = "Linear"
-	local easingDirection = "InOut"
 	local duration = DEFAULT_TWEEN_DURATION
 
 	for model, data in pairs(activeZones) do
@@ -79,21 +80,7 @@ local function updateTime()
 			highestPriority = data.Priority
 			bestTime = data.TimeOfDay
 
-			local easingConfig = model:FindFirstChild("Easing")
-			if not easingConfig then
-				continue
-			end
-
-			local style = easingConfig:FindFirstChild("Style")
-			local direction = easingConfig:FindFirstChild("Direction")
-			local durationValue = easingConfig:FindFirstChild("TransitionDuration")
-
-			if style then
-				easingStyle = style.Value
-			end
-			if direction then
-				easingDirection = direction.Value
-			end
+			local durationValue = model:FindFirstChild("TransitionDuration") :: NumberValue
 			if durationValue then
 				duration = durationValue.Value
 			end
@@ -102,11 +89,10 @@ local function updateTime()
 
 	bestTime = bestTime or DEFAULT_TIME
 	local targetTime = timeStringToNumber(bestTime)
-	local easingFunction = Easing.getEasingFunction(easingStyle, easingDirection)
 
 	-- Only tween if the time difference is noticeable
 	if math.abs(Lighting.ClockTime - targetTime) > 0.01 then
-		tweenClockTime(Lighting.ClockTime, targetTime, duration, easingFunction)
+		tweenClockTime(Lighting.ClockTime, targetTime, duration)
 	end
 	Lighting.TimeOfDay = bestTime
 end
@@ -114,7 +100,7 @@ end
 return function()
 	-- Update zones every frame
 	RunService.RenderStepped:Connect(function()
-		local character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+		local character = LocalPlayer.Character
 		local humanoidRootPart = character and character:FindFirstChild("HumanoidRootPart")
 		if not humanoidRootPart then
 			return
@@ -130,7 +116,7 @@ return function()
 			end
 
 			for _, obj in ipairs(zonesFolder:GetChildren()) do
-				if not obj:IsA("BasePart") and obj.Name ~= "Zone" then
+				if not obj:IsA("BasePart") then
 					continue
 				end
 

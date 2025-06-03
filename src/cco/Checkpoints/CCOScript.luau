@@ -1,12 +1,14 @@
 -- Checkpoint client object script by zen
 
+local Debris = game:GetService("Debris")
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local TweenService = game:GetService("TweenService")
 
-local Checkpoints = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("Checkpoints"))
+local Checkpoints = require(ReplicatedStorage:WaitForChild("Shared"):FindFirstChild("Checkpoints"))
 
 local CheckpointSound = ReplicatedStorage:WaitForChild("CheckpointSound") :: Sound
+local ConfettiEmitters = ReplicatedStorage:WaitForChild("ConfettiEmitters"):GetChildren() :: { ParticleEmitter }
 local UpdateStatsEvent = ReplicatedStorage:WaitForChild("UpdateStatsEvent") :: RemoteEvent
 
 local CheckpointsFolder = script.Parent.Parent
@@ -14,6 +16,13 @@ local CheckpointsFolder = script.Parent.Parent
 local debounceArray = {}
 
 local CHECKPOINT_ANIM_DURATION_SECONDS = 1.4
+
+local function playCheckpointSound(checkpoint: BasePart)
+	local checkpointSoundClone = CheckpointSound:Clone()
+	checkpointSoundClone.Parent = checkpoint
+	checkpointSoundClone:Play()
+	Debris:AddItem(checkpointSoundClone, checkpointSoundClone.TimeLength)
+end
 
 local function tweenCheckpointColor(checkpoint: BasePart)
 	local originalColor = checkpoint.Color
@@ -35,9 +44,8 @@ local function tweenCheckpointColor(checkpoint: BasePart)
 end
 
 local function spawnConfetti(checkpoint: BasePart)
-	local emitters = ReplicatedStorage:WaitForChild("ConfettiEmitters"):GetChildren()
-	for i = 1, #emitters do -- Emit all colors
-		local newConfetti = emitters[i]:Clone()
+	for _, emitterTemplate in pairs(ConfettiEmitters) do -- Emit all colors
+		local newConfetti = emitterTemplate:Clone()
 		newConfetti.Parent = checkpoint
 
 		-- Fade away as lifetime diminishes
@@ -50,25 +58,26 @@ local function spawnConfetti(checkpoint: BasePart)
 
 		newConfetti:Emit(10)
 
-		task.delay(newConfetti.Lifetime.Min, function()
+		task.delay(math.max(newConfetti.Lifetime.Min, 0.1), function()
 			newConfetti:Destroy()
 		end)
 	end
 end
 
 local function setNameToRoman(checkpoint: BasePart)
-	local checkpointNumber = checkpoint:WaitForChild("StageNumber")
+	local checkpointNumber = checkpoint:FindFirstChild("StageNumber")
 	if not checkpointNumber or not checkpointNumber:IsA("IntValue") then
-		warn(`StageNumber not found or not an IntValue in {checkpoint.Name}`)
+		warn(`[Checkpoints] StageNumber not found or not an IntValue in {checkpoint.Name}`)
 		return
 	end
 
 	local checkpointNumeral = Checkpoints.numberToRoman(checkpointNumber.Value)
 	local surfaceGui = checkpoint:FindFirstChild("SurfaceGui")
-	local textLabel = surfaceGui and surfaceGui:WaitForChild("TextLabel")
+	local textLabel = surfaceGui and surfaceGui:FindFirstChild("TextLabel")
 
 	if not textLabel then
-		warn(`TextLabel not found in SurfaceGui of {checkpoint.Name}`)
+		warn(`[Checkpoints] TextLabel not found in SurfaceGui of {checkpoint.Name}`)
+		return
 	end
 
 	textLabel.Text = checkpointNumeral
@@ -84,7 +93,7 @@ local function addTouchEvent(checkpoint: BasePart)
 
 		local character = hit.Parent
 
-		if not character or not character:WaitForChild("Humanoid") then
+		if not character or not character:FindFirstChild("Humanoid") then
 			return
 		end
 
@@ -93,21 +102,21 @@ local function addTouchEvent(checkpoint: BasePart)
 			return
 		end
 
-		local leaderstats = player:WaitForChild("leaderstats")
+		local leaderstats = player:FindFirstChild("leaderstats")
 		if not leaderstats then
-			warn(`Leaderstats not found for player: {player.Name}`)
+			warn(`[Checkpoints] 'leaderstats' not found for player: {player.Name}`)
 			return
 		end
 
 		local stage = leaderstats.Stage
 		if not stage or not stage:IsA("IntValue") then
-			warn(`Stage not found or not an IntValue in leaderstats of {player.Name}`)
+			warn(`[Checkpoints] 'Stage' not found or not an IntValue in leaderstats of {player.Name}`)
 			return
 		end
 
-		local checkpointNumber = checkpoint:WaitForChild("StageNumber")
+		local checkpointNumber = checkpoint:FindFirstChild("StageNumber")
 		if not checkpointNumber or not checkpointNumber:IsA("IntValue") then
-			warn(`StageNumber not found or not an IntValue in {checkpoint.Name}`)
+			warn(`[Checkpoints] 'StageNumber' not found or not an IntValue in {checkpoint.Name}`)
 			return
 		end
 
@@ -117,7 +126,7 @@ local function addTouchEvent(checkpoint: BasePart)
 
 			UpdateStatsEvent:FireServer(checkpointNumber.Value)
 
-			CheckpointSound:Play()
+			playCheckpointSound(checkpoint)
 			tweenCheckpointColor(checkpoint)
 			spawnConfetti(checkpoint)
 
@@ -129,11 +138,6 @@ local function addTouchEvent(checkpoint: BasePart)
 end
 
 return function()
-	if not CheckpointsFolder then
-		warn("Checkpoint CCOScript parent not found")
-		return
-	end
-
 	-- Listen for new parts and bind them to the event
 	CheckpointsFolder.ChildAdded:Connect(function(child: Instance)
 		if not child:IsA("BasePart") then

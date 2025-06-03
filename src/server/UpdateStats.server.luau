@@ -11,21 +11,21 @@ local UpdateStatsEvent = ReplicatedStorage:WaitForChild("UpdateStatsEvent") :: R
 local UpdateGamemodeEvent = ReplicatedStorage:WaitForChild("UpdateGamemodeEvent") :: RemoteEvent
 local UpdateKeybindsEvent = ReplicatedStorage:WaitForChild("UpdateKeybindsEvent") :: RemoteEvent
 
-JumpEvent.OnServerEvent:Connect(function(player: Player)
+JumpEvent.OnServerEvent:Connect(function(player)
 	local jumps = player:GetAttribute("Jumps")
 	if jumps then
 		player:SetAttribute("Jumps", jumps + 1)
 	end
 end)
 
-DeathEvent.OnServerEvent:Connect(function(player: Player)
+DeathEvent.OnServerEvent:Connect(function(player)
 	local deaths = player:GetAttribute("Deaths")
 	if deaths then
 		player:SetAttribute("Deaths", deaths + 1)
 	end
 end)
 
-UpdateStatsEvent.OnServerEvent:Connect(function(player: Player, checkpointNumber: number)
+UpdateStatsEvent.OnServerEvent:Connect(function(player, checkpointNumber: number)
 	local leaderstats = player:WaitForChild("leaderstats")
 	if not leaderstats then
 		warn(`Leaderstats not found for player: {player.Name}`)
@@ -40,13 +40,13 @@ UpdateStatsEvent.OnServerEvent:Connect(function(player: Player, checkpointNumber
 	end
 end)
 
-UpdateGamemodeEvent.OnServerEvent:Connect(function(player: Player, newGamemode: Gamemodes.Gamemode)
+UpdateGamemodeEvent.OnServerEvent:Connect(function(player, newGamemode: Gamemodes.Gamemode)
 	player:SetAttribute("Gamemode", newGamemode)
 end)
 
 UpdateKeybindsEvent.OnServerEvent:Connect(
 	function(
-		player: Player,
+		player,
 		saveStateKeybind: string,
 		loadStateKeybind: string,
 		deleteStateKeybind: string,

@@ -66,6 +66,8 @@ local CODE_SNIPPETS = {
 
 local LocalPlayer = Players.LocalPlayer
 
+local target = workspace:WaitForChild("Lobby"):WaitForChild("Other"):WaitForChild("Zentiph"):WaitForChild("BasePart")
+
 local function spawnSnippet(position: Vector3)
 	local base = Instance.new("Part")
 	base.Anchored = true
@@ -146,9 +148,6 @@ end
 
 -- Main loop
 task.spawn(function()
-	local target =
-		workspace:WaitForChild("Lobby"):WaitForChild("Credits"):WaitForChild("Zentiph"):WaitForChild("BasePart")
-
 	while true do
 		local character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
 		local humanoidRootPart = character:WaitForChild("HumanoidRootPart")

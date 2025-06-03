@@ -7,15 +7,16 @@ local TweenService = game:GetService("TweenService")
 
 local JumpAndSpeedChangers = script.Parent.Parent
 
-function tween(part: BasePart, time: number, properties: { [any]: any })
-	TweenService:Create(part, TweenInfo.new(time, Enum.EasingStyle.Linear, Enum.EasingDirection.Out), properties):Play()
+function tween(instance: Instance, time: number, properties: {})
+	TweenService:Create(instance, TweenInfo.new(time, Enum.EasingStyle.Linear, Enum.EasingDirection.Out), properties)
+		:Play()
 end
 
-function addTouchEventForBooster(part: BasePart)
+local function addTouchEventForBooster(part)
 	local instantBoolValue = part:FindFirstChild("Instant") :: BoolValue
 	local instant = instantBoolValue and instantBoolValue.Value == true
 
-	part.Touched:Connect(function(hit: BasePart)
+	part.Touched:Connect(function(hit)
 		local humanoid = hit.Parent and hit.Parent:FindFirstChild("Humanoid") :: Humanoid
 		if not humanoid then
 			return
@@ -36,7 +37,7 @@ function addTouchEventForBooster(part: BasePart)
 			task.spawn(function()
 				repeat
 					jumpBoost.Value -= 0.1
-					wait(0.1)
+					task.wait(0.1)
 				until not jumpBoost or not jumpBoost.Parent or jumpBoost.Value <= 0
 
 				tween(humanoid, (instant and 0) or 0.5, { JumpPower = 50 })
@@ -63,7 +64,7 @@ function addTouchEventForBooster(part: BasePart)
 			task.spawn(function()
 				repeat
 					speedBoost.Value -= 0.1
-					wait(0.1)
+					task.wait(0.1)
 				until not speedBoost or not speedBoost.Parent or speedBoost.Value <= 0
 
 				tween(humanoid, (instant and 0) or 0.5, { WalkSpeed = 16 })
@@ -81,7 +82,7 @@ function addTouchEventForBooster(part: BasePart)
 	end)
 end
 
-function addTouchEventForRemove(part: BasePart)
+function addTouchEventForRemove(part)
 	part.Touched:Connect(function(hit)
 		local humanoid = hit.Parent:FindFirstChild("Humanoid") :: Humanoid
 		if not humanoid then
@@ -100,7 +101,7 @@ function addTouchEventForRemove(part: BasePart)
 	end)
 end
 
-function addTouchEvent(part: BasePart)
+function addTouchEvent(part)
 	if part.Name == "JumpAndSpeedBooster" then
 		addTouchEventForBooster(part)
 	elseif part.Name == "JumpAndSpeedRemover" then

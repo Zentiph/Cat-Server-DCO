@@ -104,18 +104,18 @@ function Checkpoints.teleportToCheckpoint(character: Model, checkpointNumber: nu
 	local checkpointPart = nil
 
 	-- Find the checkpoint part with the given stage number
-	for _, obj in ipairs(Checkpoints.CHECKPOINTS_FOLDER:GetChildren()) do
-		if not obj:IsA("BasePart") or obj.Name ~= "Checkpoint" then
+	for _, child in pairs(Checkpoints.CHECKPOINTS_FOLDER:GetChildren()) do
+		if not child:IsA("BasePart") or child.Name ~= "Checkpoint" then
 			continue
 		end
 
-		local stageNumber = obj:WaitForChild("StageNumber")
+		local stageNumber = child:FindFirstChild("StageNumber")
 		if not stageNumber or not stageNumber:IsA("IntValue") then
 			continue
 		end
 
 		if stageNumber.Value == checkpointNumber then
-			checkpointPart = obj
+			checkpointPart = child
 			break
 		end
 	end
@@ -133,12 +133,12 @@ function Checkpoints.teleportToCheckpoint(character: Model, checkpointNumber: nu
 	local finalCFrame = checkpointCFrame * rotationOffset * offset
 
 	-- Make character jump to break out of client objects
-	local humanoid = character:WaitForChild("Humanoid") :: Humanoid
+	local humanoid = character:FindFirstChild("Humanoid") :: Humanoid
 	humanoid.Jump = true
 
 	task.wait(0.05) -- Wait for jump first
 
-	local humanoidRootPart = character:WaitForChild("HumanoidRootPart") :: Part
+	local humanoidRootPart = character:FindFirstChild("HumanoidRootPart") :: Part
 	humanoidRootPart.CFrame = finalCFrame
 	updateCamera(finalCFrame)
 end

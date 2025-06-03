@@ -4,7 +4,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local ResetStatsEvent = ReplicatedStorage:WaitForChild("ResetStatsEvent")
 
-ResetStatsEvent.OnServerEvent:Connect(function(player: Player)
+ResetStatsEvent.OnServerEvent:Connect(function(player)
 	local leaderstats = player:FindFirstChild("leaderstats")
 
 	if leaderstats and leaderstats:FindFirstChild("Stage") then

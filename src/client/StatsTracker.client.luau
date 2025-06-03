@@ -8,7 +8,7 @@ local DeathEvent = ReplicatedStorage:WaitForChild("DeathEvent") :: RemoteEvent
 
 local LocalPlayer = Players.LocalPlayer
 
-LocalPlayer.CharacterAdded:Connect(function(character: Model)
+LocalPlayer.CharacterAdded:Connect(function(character)
 	local humanoid = character:WaitForChild("Humanoid") :: Humanoid
 
 	-- Track jumps

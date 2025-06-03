@@ -6,7 +6,7 @@ local HealEvent = ReplicatedStorage:WaitForChild("HealEvent") :: RemoteEvent
 
 local debounceArray = {}
 
-HealEvent.OnServerEvent:Connect(function(player: Player, amount: number)
+HealEvent.OnServerEvent:Connect(function(player, amount: number)
 	if debounceArray[player.Name] then
 		return
 	end

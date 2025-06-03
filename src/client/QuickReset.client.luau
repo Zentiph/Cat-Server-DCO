@@ -11,7 +11,7 @@ local LocalPlayer = Players.LocalPlayer
 -- Wait for data to load before accessing keybinds
 DataState:WaitUntilLoaded()
 
-UserInputService.InputBegan:Connect(function(input: InputObject, gameProcessedEvent: boolean)
+UserInputService.InputBegan:Connect(function(input, gameProcessedEvent)
 	if gameProcessedEvent then
 		return
 	end

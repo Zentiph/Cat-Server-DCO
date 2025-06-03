@@ -36,13 +36,13 @@ statsButton.MouseButton1Click:Connect(function()
 
 	-- Update the GUI with the stats
 	if farthestStage then
-		statsFrame:WaitForChild("FarthestStage").Text = `Farthest Stage: {farthestStage}`
+		statsFrame:FindFirstChild("FarthestStage").Text = `Farthest Stage: {farthestStage}`
 	end
 	if deaths then
-		statsFrame:WaitForChild("Deaths").Text = `Deaths: {deaths}`
+		statsFrame:FindFirstChild("Deaths").Text = `Deaths: {deaths}`
 	end
 	if jumps then
-		statsFrame:WaitForChild("Jumps").Text = `Jumps: {jumps}`
+		statsFrame:FindFirstChild("Jumps").Text = `Jumps: {jumps}`
 	end
 
 	-- Flip visibility
@@ -64,7 +64,7 @@ settingsButton.MouseButton1Click:Connect(function()
 	if settingsFrame.Visible then
 		-- Set gamemode to the player's current gamemode
 		local currentGamemode = LocalPlayer:GetAttribute("Gamemode")
-		settingsFrame:WaitForChild("GamemodeDisplay").Text = currentGamemode
+		settingsFrame:FindFirstChild("GamemodeDisplay").Text = currentGamemode
 	end
 
 	-- Disable other menus
