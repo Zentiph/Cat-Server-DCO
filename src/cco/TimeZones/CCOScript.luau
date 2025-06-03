@@ -115,13 +115,13 @@ return function()
 				continue
 			end
 
-			for _, obj in ipairs(zonesFolder:GetChildren()) do
-				if not obj:IsA("BasePart") then
+			for _, child in ipairs(zonesFolder:GetChildren()) do
+				if not child:IsA("BasePart") then
 					continue
 				end
 
-				local localPosition = obj.CFrame:PointToObjectSpace(humanoidRootPart.Position)
-				local halfSize = obj.Size / 2
+				local localPosition = child.CFrame:PointToObjectSpace(humanoidRootPart.Position)
+				local halfSize = child.Size / 2
 
 				-- Check if the player is inside the zone
 				if

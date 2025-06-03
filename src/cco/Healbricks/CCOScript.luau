@@ -68,9 +68,9 @@ return function()
 	end)
 
 	-- Bind all existing children to the event
-	for _, obj in pairs(Healbricks:GetChildren()) do
-		if obj:IsA("BasePart") then
-			addTouchEvent(obj)
+	for _, child in pairs(Healbricks:GetChildren()) do
+		if child:IsA("BasePart") then
+			addTouchEvent(child)
 		end
 	end
 end

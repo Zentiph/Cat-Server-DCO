@@ -6,12 +6,12 @@ end
 
 local ccoFolder = workspace:WaitForChild("CustomClientObjects")
 
-for _, obj in ipairs(ccoFolder:GetChildren()) do
-	if not obj:IsA("Folder") then
+for _, object in ipairs(ccoFolder:GetChildren()) do
+	if not object:IsA("Folder") then
 		continue
 	end
 
-	for _, child in ipairs(obj:GetChildren()) do
+	for _, child in ipairs(object:GetChildren()) do
 		if not child:IsA("Folder") or child.Name ~= "Script" then
 			continue
 		end

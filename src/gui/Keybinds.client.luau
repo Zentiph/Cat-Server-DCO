@@ -74,7 +74,7 @@ for _, button in pairs({
 	end)
 end
 
-UserInputService.InputBegan:Connect(function(input: InputObject, gameProcessed: boolean)
+UserInputService.InputBegan:Connect(function(input, gameProcessed)
 	if not keybindListener or gameProcessed or input.UserInputType ~= Enum.UserInputType.Keyboard then
 		return
 	end

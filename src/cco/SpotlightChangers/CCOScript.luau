@@ -179,10 +179,10 @@ return function()
 	end)
 
 	-- Bind existing children to touch event
-	for _, obj in pairs(SpotlightChangers:GetChildren()) do
-		if obj:IsA("BasePart") then
-			obj.Transparency = 1
-			addTouchEvent(obj)
+	for _, child in pairs(SpotlightChangers:GetChildren()) do
+		if child:IsA("BasePart") then
+			child.Transparency = 1
+			addTouchEvent(child)
 		end
 	end
 end

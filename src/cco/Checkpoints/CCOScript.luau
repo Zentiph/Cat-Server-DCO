@@ -149,10 +149,10 @@ return function()
 	end)
 
 	-- Bind existing children to touch event
-	for _, obj in pairs(CheckpointsFolder:GetChildren()) do
-		if obj:IsA("BasePart") then
-			setNameToRoman(obj)
-			addTouchEvent(obj)
+	for _, child in pairs(CheckpointsFolder:GetChildren()) do
+		if child:IsA("BasePart") then
+			setNameToRoman(child)
+			addTouchEvent(child)
 		end
 	end
 end
