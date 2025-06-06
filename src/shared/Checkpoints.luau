@@ -133,12 +133,12 @@ function Checkpoints.teleportToCheckpoint(character: Model, checkpointNumber: nu
 	local finalCFrame = checkpointCFrame * rotationOffset * offset
 
 	-- Make character jump to break out of client objects
-	local humanoid = character:FindFirstChild("Humanoid") :: Humanoid
+	local humanoid = character:WaitForChild("Humanoid") :: Humanoid
 	humanoid.Jump = true
 
 	task.wait(0.05) -- Wait for jump first
 
-	local humanoidRootPart = character:FindFirstChild("HumanoidRootPart") :: Part
+	local humanoidRootPart = character:WaitForChild("HumanoidRootPart") :: Part
 	humanoidRootPart.CFrame = finalCFrame
 	updateCamera(finalCFrame)
 end

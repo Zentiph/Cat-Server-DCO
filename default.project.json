@@ -61,6 +61,12 @@
           "Script": {
             "$path": "src/cco/TimeZones"
           }
+        },
+        "TorsoCollidingKillbricks": {
+          "$className": "Folder",
+          "Script": {
+            "$path": "src/cco/TorsoCollidingKillbricks"
+          }
         }
       }
     },

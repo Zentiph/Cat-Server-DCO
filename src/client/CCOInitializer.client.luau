@@ -22,11 +22,6 @@ for _, object in ipairs(ccoFolder:GetChildren()) do
 			continue
 		end
 
-		local enabled = ccoScript:FindFirstChild("Enabled")
-		if enabled and enabled:IsA("BoolValue") and not enabled.Value then
-			continue
-		end
-
 		task.spawn(function()
 			local success, result = pcall(function()
 				return require(ccoScript)
