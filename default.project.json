@@ -32,6 +32,12 @@
             "$path": "src/cco/Checkpoints"
           }
         },
+        "GravityBoosters": {
+          "$className": "Folder",
+          "Script": {
+            "$path": "src/cco/GravityChangers"
+          }
+        },
         "Healbricks": {
           "$className": "Folder",
           "Script": {
