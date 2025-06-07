@@ -23,7 +23,7 @@ local function playerTouched(touch): boolean
 	return Players:GetPlayerFromCharacter(touch.Parent) == LocalPlayer
 end
 
-local function addTouchEvent(part)
+local function addTouchEvent(part: BasePart)
 	local healAmount = part:WaitForChild("HealPower")
 	if not healAmount or not healAmount:IsA("IntValue") then
 		return
