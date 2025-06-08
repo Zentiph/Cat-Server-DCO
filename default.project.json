@@ -32,7 +32,7 @@
             "$path": "src/cco/Checkpoints"
           }
         },
-        "GravityBoosters": {
+        "GravityChangers": {
           "$className": "Folder",
           "Script": {
             "$path": "src/cco/GravityChangers"
