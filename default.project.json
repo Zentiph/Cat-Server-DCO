@@ -32,6 +32,12 @@
             "$path": "src/cco/Checkpoints"
           }
         },
+        "DialogueActivators": {
+          "$className": "Folder",
+          "Script": {
+            "$path": "src/cco/DialogueActivators"
+          }
+        },
         "GravityChangers": {
           "$className": "Folder",
           "Script": {

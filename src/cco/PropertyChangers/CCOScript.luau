@@ -3,7 +3,7 @@
 local Players = game:GetService("Players")
 local TweenService = game:GetService("TweenService")
 
-local PropertyChangers = workspace:WaitForChild("CustomClientObjects"):FindFirstChild("PropertyChangers")
+local PropertyChangers = workspace:WaitForChild("CustomClientObjects"):WaitForChild("PropertyChangers")
 
 local LocalPlayer = Players.LocalPlayer
 
