@@ -10,6 +10,7 @@ local Checkpoints = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChil
 local Gamemodes = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("Gamemodes"))
 
 local DataLoadedEvent = ReplicatedStorage:WaitForChild("DataLoadedEvent") :: RemoteEvent
+local UpdateStagesEvent = ReplicatedStorage:WaitForChild("UpdateStagesEvent") :: RemoteEvent
 
 local checkpointData = DataStoreService:GetDataStore("Player_Checkpoint_Data")
 
@@ -83,6 +84,8 @@ Players.PlayerAdded:Connect(function(player)
 
 	stage.Value = currentStage
 	difficulty.Value = Checkpoints.getDifficultyFromStage(currentStage)
+
+	UpdateStagesEvent:FireClient(player, stage.Value)
 
 	player:SetAttribute("FarthestStage", farthestStage)
 	player:SetAttribute("Jumps", jumpCount)

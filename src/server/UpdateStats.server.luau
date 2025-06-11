@@ -10,6 +10,7 @@ local DeathEvent = ReplicatedStorage:WaitForChild("DeathEvent") :: RemoteEvent
 local UpdateStatsEvent = ReplicatedStorage:WaitForChild("UpdateStatsEvent") :: RemoteEvent
 local UpdateGamemodeEvent = ReplicatedStorage:WaitForChild("UpdateGamemodeEvent") :: RemoteEvent
 local UpdateKeybindsEvent = ReplicatedStorage:WaitForChild("UpdateKeybindsEvent") :: RemoteEvent
+local UpdateStagesEvent = ReplicatedStorage:WaitForChild("UpdateStagesEvent") :: RemoteEvent
 
 JumpEvent.OnServerEvent:Connect(function(player)
 	local jumps = player:GetAttribute("Jumps")
@@ -34,6 +35,8 @@ UpdateStatsEvent.OnServerEvent:Connect(function(player, checkpointNumber: number
 
 	leaderstats.Stage.Value = checkpointNumber
 	leaderstats.Difficulty.Value = Checkpoints.getDifficultyFromStage(checkpointNumber)
+
+	UpdateStagesEvent:FireClient(player, leaderstats.Stage.Value)
 	-- Update farthest progress if this is the farthest so far
 	if leaderstats.Stage.Value > (player:GetAttribute("FarthestStage") or 0) then
 		player:SetAttribute("FarthestStage", leaderstats.Stage.Value)

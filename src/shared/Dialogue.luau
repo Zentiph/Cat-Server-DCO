@@ -22,14 +22,20 @@ local spriteBase = dialogueBox:WaitForChild("Sprite") :: ImageLabel
 local Dialogue = {}
 
 local dialogueAvailable = Instance.new("BindableEvent")
+local dialogueTalking = Instance.new("BindableEvent")
 
 Dialogue.Active = false
+Dialogue.Talking = false
 Dialogue.__Sprites = {}
 
 --[[
 Set the font of the dialogue box.
 ]]
 function Dialogue:SetFont(font: Enum.Font)
+	if Dialogue.Talking then
+		dialogueTalking.Event:Wait()
+	end
+
 	dialogueName.Font = font
 	dialogueText.Font = font
 end
@@ -38,6 +44,10 @@ end
 Set the font of the dialogue box.
 ]]
 function Dialogue:SetFontFromId(id: number)
+	if Dialogue.Talking then
+		dialogueTalking.Event:Wait()
+	end
+
 	dialogueName.Font = Font.fromId(id)
 	dialogueText.Font = Font.fromId(id)
 end
@@ -46,6 +56,10 @@ end
 Set the name of the dialogue box.
 ]]
 function Dialogue:SetName(name: string)
+	if Dialogue.Talking then
+		dialogueTalking.Event:Wait()
+	end
+
 	dialogueName.Text = name
 end
 
@@ -53,6 +67,10 @@ end
 Set the name color of the dialogue box.
 ]]
 function Dialogue:SetNameColor(color: Color3)
+	if Dialogue.Talking then
+		dialogueTalking.Event:Wait()
+	end
+
 	dialogueName.TextColor3 = color
 end
 
@@ -60,6 +78,10 @@ end
 Set the text color of the dialogue box.
 ]]
 function Dialogue:SetTextColor(color: Color3)
+	if Dialogue.Talking then
+		dialogueTalking.Event:Wait()
+	end
+
 	dialogueText.TextColor3 = color
 end
 
@@ -67,12 +89,20 @@ end
 Set the background color of the dialogue box.
 ]]
 function Dialogue:SetBackgroundColor(color: Color3)
+	if Dialogue.Talking then
+		dialogueTalking.Event:Wait()
+	end
+
 	dialogueBox.BackgroundColor3 = color
 end
 --[[
 Set the background color sequence of the dialogue box.
 ]]
 function Dialogue:SetBackgroundColorSequence(colorSequence: ColorSequence)
+	if Dialogue.Talking then
+		dialogueTalking.Event:Wait()
+	end
+
 	dialogueBox.BackgroundColor3 = colorSequence
 end
 
@@ -80,6 +110,10 @@ end
 Set the border color of the dialogue box.
 ]]
 function Dialogue:SetBorderColor(color: Color3)
+	if Dialogue.Talking then
+		dialogueTalking.Event:Wait()
+	end
+
 	borderBox.BackgroundColor3 = color
 	borderBox.BorderColor3 = color
 end
@@ -88,28 +122,39 @@ end
 Set the sprites to be used with the dialogue.
 ]]
 function Dialogue:SetSprites(sprites: { string })
+	if Dialogue.Talking then
+		dialogueTalking.Event:Wait()
+	end
+
 	if #sprites < 1 then
 		error("Sprites for dialogue must contain at least one sprite")
 	end
 
-	for _, sprite in ipairs(sprites) do
+	for _, sprite in ipairs(Dialogue.__Sprites) do
+		sprite:Destroy()
+	end
+	table.clear(Dialogue.__Sprites)
+
+	for _, spriteId in ipairs(sprites) do
 		local image = spriteBase:Clone()
 		image.Parent = spriteBase.Parent
-		image.Image = sprite
-		table.insert(self.__Sprites, image)
+		image.Image = spriteId
+		image.Visible = false
+		image.Position = spriteBase.Position
+		table.insert(Dialogue.__Sprites, image)
 	end
-	self.__Sprites[1].Visible = true -- Make first sprite visible
+	Dialogue.__Sprites[1].Visible = true -- Make first sprite visible
 end
 
 --[[
 Open the dialogue menu (with a tween).
 ]]
 function Dialogue:Open()
-	if self.Active then
+	if Dialogue.Active then
 		dialogueAvailable.Event:Wait()
 	end
 
-	self.Active = true
+	Dialogue.Active = true
 	dialogueBox.Size = UDim2.new(0, 0, 0, 0)
 	dialogueBox.Visible = true
 	TweenService:Create(dialogueBox, tweenInfo, { Size = UDim2.new(0.658, 0, 0.189, 0) }):Play()
@@ -124,6 +169,12 @@ Write text to the dialogue menu.
 @param sound - The talk sound to play when writing each character
 ]]
 function Dialogue:Write(text: string, interval: number, sound: Sound)
+	if Dialogue.Talking then
+		dialogueTalking.Event:Wait()
+	end
+
+	Dialogue.Talking = true
+
 	local animating = true
 	local currentSprite = 1
 
@@ -131,11 +182,11 @@ function Dialogue:Write(text: string, interval: number, sound: Sound)
 		local bounceUp = true
 
 		while animating do
-			self.__Sprites[currentSprite].Visible = false
+			Dialogue.__Sprites[currentSprite].Visible = false
 
 			-- Go to next sprite, looping around if needed
-			currentSprite = (currentSprite % #self.__Sprites) + 1
-			local sprite = self.__Sprites[currentSprite]
+			currentSprite = (currentSprite % #Dialogue.__Sprites) + 1
+			local sprite = Dialogue.__Sprites[currentSprite]
 			sprite.Visible = true
 
 			local originalPos = spriteBase.Position
@@ -172,6 +223,8 @@ function Dialogue:Write(text: string, interval: number, sound: Sound)
 
 	-- Add time to read
 	task.wait(2)
+
+	Dialogue.Talking = false
 end
 
 --[[
